@@ -30,7 +30,7 @@ export function soundex(
             if (match === null) continue;
             const segment = idx == 0 ? rule.codeIfStart : rule.codeElse;
             codeSegments.push(segment);
-            if (segment != '') minCurLength++;
+            if (segment != '' && segment?.[0] != '') minCurLength++; // TODO: cleanup
             idx += match[0].length;
             rule.pattern.lastIndex = 0;
             continue encoder;
@@ -45,6 +45,13 @@ export function soundex(
         .map(code => code.slice(0, codeLength));
 
     return Array.from(new Set(codes));
+}
+
+export function soundexPrefix(
+    phrase: string,
+    maxCodeLength: number = CODE_LENGTH,
+): string[] {
+    return soundex(phrase, maxCodeLength, false);
 }
 
 type Segment = string | string[];

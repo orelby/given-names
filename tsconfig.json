@@ -12,11 +12,13 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "ES2022",
+    "target": "esnext",
     "module": "preserve",
     "baseUrl": "./",
     "paths": {
-      "@shared/*": ["./src/shared/*"]
+      "@shared/*": [
+        "./src/shared/*"
+      ]
     }
   },
   "angularCompilerOptions": {

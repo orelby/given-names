@@ -1,0 +1,120 @@
+:host {
+    display: block;
+    container-type: inline-size;
+}
+
+.totals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18ch, 1fr));
+    gap: 2ch;
+    margin: 2ch 0;
+}
+
+@container (max-width: 98ch) {
+    .totals > :nth-child(1) {
+        grid-column: 2 / span 2;
+    }
+
+    .totals > :nth-child(2) {
+        grid-column: 1;
+    }
+}
+
+@container (max-width: 78ch) {
+    .totals > :nth-child(1) {
+        grid-column: 1 / -1;
+    }
+
+    .totals {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@container (max-width: 38ch) {
+    .totals {
+        grid-template-columns: 1fr;
+    }
+}
+
+.totals mat-icon {
+    transform: scale(1.25);
+}
+
+.mat-mdc-list-item mat-icon,
+.mat-mdc-list-item:hover mat-icon {
+    color: var(--_color, var(--gender-color-all));
+
+    &[fonticon="boy"] {
+        --_color: var(--gender-color-men);
+    }
+    
+    &[fonticon="girl"] {
+        --_color: var(--gender-color-women);
+    }
+}
+
+.content-with-bar {
+    display: flex;
+    justify-content: start;
+    align-items: stretch;
+}
+
+.gender-bar {
+    flex-shrink: 0;
+    width: 0.5ch;
+    margin-block: 1ch;
+    border-radius: 3px;
+    background: linear-gradient(
+        to bottom,
+        var(--gender-color-men) 0%,
+        var(--gender-color-men) calc((1 - var(--ratio)) * 100%),
+        var(--gender-color-women) calc((1 - var(--ratio)) * 100%),
+        var(--gender-color-women) 100%
+    );
+}
+
+.gender-bar--empty {
+    background: var(--gender-color-all);
+}
+
+.religion-bar {
+    display: flex;
+    block-size: 0.5ch;
+    max-inline-size: 60rem;
+    margin-block: 1rem;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.religion-jewish {
+    --religion-color: var(--religion-color-jewish);
+}
+
+.religion-muslim {
+    --religion-color: var(--religion-color-muslim);
+}
+
+.religion-christian {
+    --religion-color: var(--religion-color-christian);
+}
+
+.religion-druze {
+    --religion-color: var(--religion-color-druze);
+}
+
+.religion-all {
+    --religion-color: var(--religion-color-all);
+}
+
+.religion-segment {
+    background: hsl(from var(--religion-color) h calc(s * 0.8) 60%);
+}
+
+mat-card {
+    background: hsl(from var(--religion-color) h calc(s * 0.8) 93%);
+    transition: background-color 200ms;
+}
+
+mat-card:hover {
+    background: hsl(from var(--religion-color) h calc(s * 0.8) 90%);
+}

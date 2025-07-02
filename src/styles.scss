@@ -1,0 +1,55 @@
+@use "@angular/material" as mat;
+
+$font-family: "Segoe UI", sans-serif;
+
+$theme: mat.define-theme(
+    (
+        color: (
+            primary: mat.$azure-palette
+        ),
+        typography: (
+            plain-family: $font-family,
+            brand-family: $font-family
+        ),
+        density: (
+            scale: -2
+        )
+    )
+);
+
+html,
+body {
+    min-height: 100%;
+    margin: 0;
+}
+
+html {
+    color-scheme: light;
+
+    @include mat.theme(
+        (
+            color: mat.$azure-palette,
+            typography: $font-family,
+            density: -2
+        )
+    );
+
+    --gender-color-all: #{mat.m2-get-color-from-palette(mat.$m2-gray-palette, 700)};
+    --gender-color-men: #{mat.m2-get-color-from-palette(mat.$m2-blue-palette, 400)};
+    --gender-color-women: #{mat.m2-get-color-from-palette(mat.$m2-pink-palette, 400)};
+
+    --religion-color-all: var(--gender-color-all);
+    --religion-color-jewish: #184d8b;
+    --religion-color-muslim: #29a333;
+    --religion-color-christian: #be2328;
+    --religion-color-druze: #ff9800;
+}
+
+body {
+    font-family: $font-family;
+    margin: 0 auto;
+    padding: 1rem 1ch 2rem;
+    max-width: 100ch;
+}
+
+// @include mat.typography-hierarchy($theme);

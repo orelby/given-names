@@ -107,7 +107,7 @@
 }
 
 .religion-segment {
-    background: hsl(from var(--religion-color) h calc(s * 0.8) 60%);
+    background: var(--religion-color);
 }
 
 mat-card {

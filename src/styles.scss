@@ -34,15 +34,21 @@ html {
         )
     );
 
-    --gender-color-all: #{mat.m2-get-color-from-palette(mat.$m2-gray-palette, 700)};
+    --gender-color-all: #{mat.m2-get-color-from-palette(mat.$m2-gray-palette, 600)};
     --gender-color-men: #{mat.m2-get-color-from-palette(mat.$m2-blue-palette, 400)};
     --gender-color-women: #{mat.m2-get-color-from-palette(mat.$m2-pink-palette, 400)};
 
     --religion-color-all: var(--gender-color-all);
-    --religion-color-jewish: #184d8b;
-    --religion-color-muslim: #29a333;
-    --religion-color-christian: #be2328;
-    --religion-color-druze: #ff9800;
+
+    // --religion-color-jewish: #184d8b;
+    // --religion-color-muslim: #29a333;
+    // --religion-color-christian: #be2328;
+    // --religion-color-druze: #ff9800;
+
+    --religion-color-jewish: hsl(212, 65%, 55%);
+    --religion-color-muslim: hsl(125, 90%, 35%);
+    --religion-color-christian: hsl(358, 60%, 60%);
+    --religion-color-druze: hsl(36, 100%, 50%);
 }
 
 body {
@@ -53,3 +59,12 @@ body {
 }
 
 // @include mat.typography-hierarchy($theme);
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    text-wrap: balance;
+}

@@ -1,8 +1,6 @@
 import {
-    Demographic, GenderBitmasks, ReligionBitmasks, SingleDemographic,
-    genders,
+    Demographic, SingleDemographic,
     parseGender, parseReligion,
-    religions
 } from "@shared/models/demographics";
 import { NameRecord, NameRecords } from "@shared/models/name-records";
 
@@ -18,7 +16,7 @@ export class NameCsvRepository {
         const lines = csvText.split('\n');
 
         for (let i = 1; i < lines.length; i++) {
-            if (shouldChunkLoad && (i & 1024) === 0) {
+            if (shouldChunkLoad && (i & 1023) === 0) {
                 await new Promise(resolve => setTimeout(resolve, 0));
                 // await scheduler.yield();
             }
@@ -73,27 +71,5 @@ export class NameCsvRepository {
 
     getAllByName(): ReadonlyMap<string, readonly NameRecord[]> {
         return this.byName;
-    }
-
-    getAll() {
-        // return [...this.byDemographic.values()].flatMap(arr => arr).map(rec => ({
-        //     gender: genders.filter(g => (g.bitmask & rec.demographic)
-        //         && g.bitmask !== GenderBitmasks.All)
-        //         .map(g => g.slug[0].toUpperCase() + g.slug.slice(1))[0],
-        //     demographic: religions.filter(r => (r.bitmask & rec.demographic)
-        //         && r.bitmask !== ReligionBitmasks.All
-        //     ).map(r => r.slug[0].toUpperCase() + r.slug.slice(1))[0],
-        //     total: rec.total
-        // }));
-
-        return [...this.byDemographic.values()].flatMap(arr => arr).map(rec => ({
-            name: rec.name,
-            gender: genders.filter(g => (g.bitmask & rec.demographic)
-                && g.bitmask !== GenderBitmasks.All)
-                .map(g => g.slug[0].toUpperCase() + g.slug.slice(1))[0],
-            demographic: religions.filter(r => (r.bitmask & rec.demographic)
-                && r.bitmask !== ReligionBitmasks.All).map(r => r.slug[0].toUpperCase() + r.slug.slice(1))[0],
-            total: rec.yearTotals.slice(-10).reduce((acc, cur) => acc + cur, 0)
-        })).filter(rec => rec.total > 0);
     }
 }

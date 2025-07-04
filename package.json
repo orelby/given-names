@@ -10,7 +10,7 @@
     "test": "ng test",
     "serve:ssr:given-names": "node dist/given-names/server/server.mjs",
     "lint": "ng lint",
-    "build:scripts": "npx tsc --project ./tsconfig.scripts.json & npx tsc-alias --project ./tsconfig.scripts.json",
+    "build:scripts": "npx tsc --project ./tsconfig.scripts.json && npx tsc-alias --project ./tsconfig.scripts.json",
     "prebuild:data": "npm run build:scripts",
     "build:data": "node --expose-gc out-tsc/scripts/scripts/build-demographic-data.js"
   },

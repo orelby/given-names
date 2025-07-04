@@ -1,6 +1,6 @@
 import { concatWith, of, switchMap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { Component, computed, input, Signal } from '@angular/core';
+import { Component, computed, input, Signal, inject } from '@angular/core';
 import { NameRecords } from '@shared/models/name-records';
 import { NameRepository } from './name-repository';
 import {
@@ -56,7 +56,7 @@ export class Name {
 
   protected readonly religions = religions;
 
-  constructor(protected nameRepository: NameRepository) { }
+  protected readonly nameRepository = inject(NameRepository);
 
   getGenderRatio(religion: Religion): number {
     const r = this.$totalByGenderByReligion()[religion.bitmask];

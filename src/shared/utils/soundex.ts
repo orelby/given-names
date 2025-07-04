@@ -15,8 +15,8 @@
  */
 export function soundex(
     phrase: string,
-    codeLength: number = CODE_LENGTH,
-    isFixedLength: boolean = true
+    codeLength = CODE_LENGTH,
+    isFixedLength = true
 ): string[] {
     const str = sanitize(phrase);
     const codeSegments = [] as Segment[];
@@ -94,7 +94,7 @@ function sanitize(phrase: string): string {
 
 // join all possible combinations of branching segments
 function joinSegments(segments: Segment[]): string[] {
-    let results: Array<string[]> = [[]];
+    let results: string[][] = [[]];
 
     for (const segment of segments) {
         if (typeof segment === 'string') {

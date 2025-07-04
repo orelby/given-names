@@ -1,4 +1,4 @@
-import { afterNextRender, Component, ElementRef, OnInit } from '@angular/core';
+import { afterNextRender, Component, inject, OnInit } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { Header } from "./layout/header";
 import { Footer } from "./layout/footer";
@@ -36,10 +36,10 @@ export class App implements OnInit {
   nameControl = new FormControl('');
   suggestedNames$!: Observable<string[]>;
 
-  constructor(
-    protected nameService: NameSuggestionService,
-    protected router: Router,
-  ) {
+  protected nameService = inject(NameSuggestionService);
+  protected router = inject(Router);
+
+  constructor() {
     afterNextRender(() => setTimeout(
       function setInitialFocusOnSearchInput() {
         const targetElement = document.querySelector('.search-form input') as HTMLElement | undefined;

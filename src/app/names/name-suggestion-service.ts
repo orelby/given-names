@@ -1,23 +1,23 @@
 import { map, Observable, shareReplay, tap } from 'rxjs';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { soundexPrefix } from '@shared/utils/soundex';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { distance } from 'fastest-levenshtein';
 
 interface SoundexCodebook {
-  readonly codes: ReadonlyArray<string>;
-  readonly nameLists: ReadonlyArray<string>;
+  readonly codes: readonly string[];
+  readonly nameLists: readonly string[];
 };
 
 @Injectable({
   providedIn: 'root'
 })
 export class NameSuggestionService {
-  private soundexCodebook$: Observable<SoundexCodebook>;
+  private readonly soundexCodebook$: Observable<SoundexCodebook>;
 
-  constructor(http: HttpClient) {
-    this.soundexCodebook$ = http
+  constructor() {
+    this.soundexCodebook$ = inject(HttpClient)
       .get<SoundexCodebook>(`${environment.dataPath}/soundex.json`)
       .pipe(shareReplay(1));
   }

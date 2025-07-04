@@ -8,7 +8,7 @@
 
 <div class="religion-bar">
     @for (religion of religions; track religion) {
-    @if (religion.slug != "all") {
+    @if (religion.slug !== "all") {
     <div class="religion-segment" [style.flex]="getReligionTotal(religion)"
         [class]="'religion-' + religion.slug">
     </div>
@@ -23,7 +23,7 @@
         <mat-card-content>
             <div class="content-with-bar">
                 @let genderRatio = getGenderRatio(religion);
-                @if (totalByGenderByReligion[religion.bitmask][genders[0].bitmask] == 0) {
+                @if (totalByGenderByReligion[religion.bitmask][genders[0].bitmask] === 0) {
                 <div class="gender-bar gender-bar--empty"></div>
                 } @else {
                 <div class="gender-bar" [style.--ratio]="genderRatio"></div>

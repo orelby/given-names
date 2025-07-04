@@ -1,48 +1,38 @@
-import { Inject, Injectable } from "@angular/core";
+import { fromPromise } from "rxjs/internal/observable/innerFrom";
+import { map, Observable, shareReplay, switchMap, tap } from "rxjs";
+import { inject, Injectable, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { HttpClient } from '@angular/common/http';
 import { environment } from "src/environments/environment";
-import { map, Observable, shareReplay, switchMap, tap } from "rxjs";
-import {
-    Demographic, SingleDemographic,
-    parseGender, parseReligion
-} from "@shared/models/demographics";
-import { NameRecord, NameRecords } from "@shared/models/name-records";
-import { fromPromise } from "rxjs/internal/observable/innerFrom";
-import { isPlatformBrowser } from "@angular/common";
-import { PLATFORM_ID } from '@angular/core';
+import { Demographic, SingleDemographic } from "@shared/models/demographics";
+import { NameRecords } from "@shared/models/name-records";
+import { NameCsvRepository } from "./name-csv-repository";
 
 @Injectable({
     providedIn: 'root'
 })
 export class NameRepository {
-    private shouldChunkInit: boolean;
+    private readonly init$: Observable<unknown>;
 
-    private init$: Observable<any>;
+    private readonly repo: NameCsvRepository = new NameCsvRepository();
 
-    private byDemographic: Map<SingleDemographic, NameRecord[]> = new Map();
+    constructor() {
+        const shouldChunkLoad = isPlatformBrowser(inject(PLATFORM_ID));
 
-    private byName: Map<string, NameRecord[]> = new Map();
-
-    constructor(
-        http: HttpClient,
-        @Inject(PLATFORM_ID) platformId: Object
-    ) {
-        this.shouldChunkInit = isPlatformBrowser(platformId);
-
-        this.init$ = http.get(
+        this.init$ = inject(HttpClient).get(
             `${environment.dataPath}/given-names.csv`,
             { responseType: 'text' }
         ).pipe(
-            // tap(() => console.time('NameRepository.initFromCsv')),
-            switchMap(csv => fromPromise(this.initFromCsv(csv))),
-            // tap(() => console.timeEnd('NameRepository.initFromCsv')),
+            // tap(() => console.time('NameRepository loadFromCsv')),
+            switchMap(csv => fromPromise(this.repo.loadFromCsv(csv, shouldChunkLoad))),
+            // tap(() => console.timeEnd('NameRepository loadFromCsv')),
             shareReplay(1)
         );
     }
 
     getByName(name: string): Observable<NameRecords> {
         return this.init$.pipe(map(
-            () => this.byName.get(name) ?? []
+            () => this.repo.getByName(name)
         ));
     }
 
@@ -50,58 +40,20 @@ export class NameRepository {
         name: string,
         demographic: Demographic
     ): Observable<NameRecords | undefined> {
-        return this.getByName(name).pipe(map(
-            records => records.filter(r => demographic & r.demographic)
+        return this.init$.pipe(map(
+            () => this.repo.getByNameAndDemographic(name, demographic)
         ));
     }
 
     getByDemographic(demographic: SingleDemographic): Observable<NameRecords> {
         return this.init$.pipe(map(
-            () => this.byDemographic.get(demographic) ?? []
+            () => this.repo.getByDemographic(demographic)
         ));
     }
 
-    getAllByDemographic(): Observable<ReadonlyMap<SingleDemographic, NameRecords>> {
+    getAllByName() {
         return this.init$.pipe(map(
-            () => this.byDemographic
+            () => this.repo.getAllByName()
         ));
-    }
-
-    private async initFromCsv(csv: string): Promise<void> {
-        const lines = csv.split('\n');
-
-        for (let i = 1; i < lines.length; i++) {
-            if (this.shouldChunkInit && (i & 1023) === 0) {
-                await new Promise(resolve => setTimeout(resolve, 0));
-                // await scheduler.yield();
-            }
-
-            const fields = lines[i].trim().split(',');
-
-            if (fields.length < 5) continue;
-
-            const [gender, religion, name, total, ...yearTotals] = fields;
-
-            const demographic = parseGender(gender) | parseReligion(religion);
-
-            const record: NameRecord = {
-                demographic,
-                name,
-                total: Number(total),
-                yearTotals: yearTotals.map(Number)
-            };
-
-            if (!this.byDemographic.has(demographic)) {
-                this.byDemographic.set(demographic, []);
-            }
-
-            this.byDemographic.get(demographic)!.push(record);
-
-            if (!this.byName.has(name)) {
-                this.byName.set(name, []);
-            }
-
-            this.byName.get(name)!.push(record);
-        }
     }
 }

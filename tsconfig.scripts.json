@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/scripts",
+    "types": [
+      "node"
+    ],
+    "allowArbitraryExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "sourceMap": true
+  },
+  "include": [
+    "scripts/**/*.ts",
+  ],
+  "tsc-alias": {
+    "verbose": false,
+    "resolveFullPaths": true,
+  }
+}

@@ -1,6 +1,7 @@
 {
   "name": "given-names",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,7 +9,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:given-names": "node dist/given-names/server/server.mjs",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "build:scripts": "npx tsc --project ./tsconfig.scripts.json & npx tsc-alias --project ./tsconfig.scripts.json",
+    "prebuild:data": "npm run build:scripts",
+    "build:data": "node --expose-gc out-tsc/scripts/scripts/build-demographic-data.js"
   },
   "private": true,
   "dependencies": {
@@ -42,6 +46,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "~5.8.2",
     "typescript-eslint": "8.34.1"
   }

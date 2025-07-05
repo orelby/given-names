@@ -16,8 +16,9 @@ type GenderName = keyof typeof GenderBitmasks;
 const religionNames = Array.from(Object.keys(ReligionBitmasks)) as ReligionName[];
 const genderNames = Array.from(Object.keys(GenderBitmasks)) as GenderName[];
 
+const dataPath = `./public/${environment.dataPath}`;
 const repo = new NameCsvRepository();
-const csvText = readFileSync(`.${environment.dataPath}/given-names.csv`, 'utf-8');
+const csvText = readFileSync(`${dataPath}/given-names.csv`, 'utf-8');
 repo.loadFromCsv(csvText);
 
 interface Entry {
@@ -30,19 +31,21 @@ interface DemographicEntry extends Entry {
 }
 
 const quantileFractions = [
-  ...Array.from({ length: 8 }, (_, i) => (i + 1) * 0.1),
-  ...Array.from({ length: 10 }, (_, i) => 0.9 + i * 0.01)
+  ...Array.from({ length: 9 }, (_, i) => (i + 1) * 0.1),
+  ...Array.from({ length: 9 }, (_, i) => 0.9 + (i + 1) * 0.01)
 ].map(num => Number(num.toFixed(2)));
 
-const quantileLabels: DemographicStats['quantileLabels'] = quantileFractions.map(
-  num => num < 0.89 ? {
+const quantileLabels: DemographicStats['quantileLabels'] = quantileFractions.map(num => {
+  const percentile = Math.round(num * 100);
+
+  return percentile % 10 === 0 ? {
     type: "decile",
     value: Math.round(num * 10)
   } : {
     type: "percentile",
-    value: Math.round(num * 100)
+    value: percentile
   }
-);
+});
 
 // Simple "lower" interpolation quantile
 function computeQuantiles(sortedValues: Entry[], fractions: number[]): number[] {
@@ -207,7 +210,7 @@ const nameRecordsGroupedByName = repo.getAllByName();
 const res = measure(() => buildDemographicData(nameRecordsGroupedByName), 'buildQuantileData');
 
 writeFileSync(
-  `.${environment.dataPath}/demographic-data.json`,
+  `${dataPath}/demographic-data.json`,
   JSON.stringify(res),
   'utf8'
 );

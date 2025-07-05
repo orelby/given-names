@@ -1,3 +1,6 @@
+import { environmentDefaults } from "./environment-defaults";
+
 export const environment = {
-    dataPath: '/data/2024-12-09'
+    ...environmentDefaults,
+    production: true,
 };

@@ -1,5 +1,9 @@
 @use "@angular/material" as mat;
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 $font-family: "Segoe UI", sans-serif;
 
 $theme: mat.define-theme(
@@ -17,13 +21,12 @@ $theme: mat.define-theme(
     )
 );
 
-html,
-body {
-    min-height: 100%;
-    margin: 0;
-}
-
 html {
+    min-width: 20ch;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    scrollbar-gutter: stable;
     color-scheme: light;
 
     @include mat.theme(
@@ -52,19 +55,19 @@ html {
 }
 
 body {
-    font-family: $font-family;
+    min-height: 100%;
+    max-width: 100ch;
     margin: 0 auto;
     padding: 1rem 1ch 2rem;
-    max-width: 100ch;
+    font-family: $font-family;
 }
 
 // @include mat.typography-hierarchy($theme);
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    text-wrap: balance;
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }

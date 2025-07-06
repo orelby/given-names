@@ -7,14 +7,11 @@ import { readFileSync, writeFileSync } from 'fs';
 
 import { NameCsvRepository } from './../src/app/names/name-csv-repository';
 import { environment } from './../src/environments/environment';
-import { NameRecord, START_YEAR } from '@shared/models/name-records';
-import { GenderBitmasks, ReligionBitmasks, SingleDemographic } from '@shared/models/demographics';
+import { getTotalByYearPeriod, NameRecord } from '@shared/models/name-records';
+import { GenderBitmasks, ReligionBitmasks, SingleDemographic, DemographicStats, DemographicGroupStats, DemographicPeriodStats } from '@shared/models/demographics';
+import { religionNames, genderNames } from '@shared/models/demographics';
+import { YearPeriod, yearPeriods } from '@shared/models/year-periods';
 
-type ReligionName = keyof typeof ReligionBitmasks;
-type GenderName = keyof typeof GenderBitmasks;
-
-const religionNames = Array.from(Object.keys(ReligionBitmasks)) as ReligionName[];
-const genderNames = Array.from(Object.keys(GenderBitmasks)) as GenderName[];
 
 const dataPath = `./public/${environment.dataPath}`;
 const repo = new NameCsvRepository();
@@ -32,31 +29,24 @@ interface DemographicEntry extends Entry {
 
 const quantileFractions = [
   ...Array.from({ length: 9 }, (_, i) => (i + 1) * 0.1),
-  ...Array.from({ length: 9 }, (_, i) => 0.9 + (i + 1) * 0.01)
+  ...Array.from({ length: 10 }, (_, i) => 0.9 + (i + 1) * 0.01)
 ].map(num => Number(num.toFixed(2)));
 
 const quantileLabels: DemographicStats['quantileLabels'] = quantileFractions.map(num => {
   const percentile = Math.round(num * 100);
 
-  return percentile % 10 === 0 ? {
-    type: "decile",
-    value: Math.round(num * 10)
-  } : {
+  return {
     type: "percentile",
     value: percentile
   }
 });
 
-// Simple "lower" interpolation quantile
+// Simple "higher" interpolation quantile
 function computeQuantiles(sortedValues: Entry[], fractions: number[]): number[] {
   return fractions.map(f => {
-    const idx = Math.max(0, Math.floor(f * (sortedValues.length - 1)));
+    const idx = Math.min(Math.max(0, Math.ceil(f * sortedValues.length) - 1), sortedValues.length - 1);
     return sortedValues[idx].total;
   });
-}
-
-function getValueFromRecord(record: NameRecord): number {
-  return record.total;
 }
 
 function getValueFromEntries(
@@ -73,7 +63,10 @@ function getValueFromEntries(
   return value;
 }
 
-function buildEntries(byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>) {
+function buildEntries(
+  byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>,
+  yearPeriod: YearPeriod
+) {
   const entriesByDemographic = new Map<SingleDemographic, Entry[]>();
   const entriesGroupedByName: DemographicEntry[][] = [];
 
@@ -83,10 +76,13 @@ function buildEntries(byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>) {
     for (const record of records) {
       const key = record.demographic;
       if (!entriesByDemographic.has(key)) entriesByDemographic.set(key, []);
+
+      const total = getTotalByYearPeriod(record, yearPeriod);
+      if (total === 0) continue;
       const entry = {
         name,
         demographic: record.demographic,
-        total: getValueFromRecord(record),
+        total,
       };
       entriesByDemographic.get(key)!.push(entry);
       entries.push(entry);
@@ -117,33 +113,18 @@ function collectEntries(
   );
 }
 
-interface DemographicGroupStats {
-  quantiles: number[];
-  topNames: Entry[];
-}
-
-interface DemographicStats {
-  startYear: number;
-  endYear: number;
-  quantileLabels: {
-    type: 'decile' | 'percentile',
-    value: number
-  }[];
-  byReligionAndGender: Record<
-    ReligionName,
-    Record<GenderName, DemographicGroupStats>
-  >;
-}
-
-function buildDemographicData(byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>): DemographicStats {
+function buildDemographicData(
+  byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>,
+  yearPeriod: YearPeriod
+): DemographicPeriodStats {
 
   const { entriesByDemographic, entriesGroupedByName } = measure(
-    () => buildEntries(byName),
+    () => buildEntries(byName, yearPeriod),
     'buildDemographicData__buildEntries',
     false
   );
 
-  const byReligionAndGender = {} as DemographicStats['byReligionAndGender'];
+  const byReligionAndGender = {} as DemographicPeriodStats['byReligionAndGender'];
 
   for (const religionName of religionNames) {
     const religionBitmask = ReligionBitmasks[religionName];
@@ -166,6 +147,8 @@ function buildDemographicData(byName: ReadonlyMap<string, ReadonlyArray<NameReco
       );
 
       byReligionAndGender[religionName][genderName] = {
+        nameTotal: entries.length,
+        populationTotal: entries.reduce((acc, cur) => acc + cur.total, 0),
         quantiles: measure(
           () => computeQuantiles(entries, quantileFractions),
           `buildDemographicData__[${religionName}][${genderName}]__computeQuantiles`,
@@ -177,11 +160,9 @@ function buildDemographicData(byName: ReadonlyMap<string, ReadonlyArray<NameReco
   }
 
   const result = {
-    startYear: START_YEAR,
-    endYear: START_YEAR + byName.get(entriesGroupedByName[0][0].name)![0].yearTotals.length - 1,
-    quantileLabels,
+    yearPeriod,
     byReligionAndGender,
-  } as DemographicStats;
+  } as DemographicPeriodStats;
 
   return result;
 }
@@ -198,7 +179,7 @@ function measure<T>(cb: () => T, label: string, shouldLog: boolean = true): T {
     const timeStart = performance.now();
     res = cb();
     const timeEnd = performance.now();
-    console.log(`${label}: ${timeEnd - timeStart}ms`);
+    console.log(`${label}: ${(timeEnd - timeStart).toFixed(3)}ms`);
   } else {
     res = cb();
   }
@@ -207,10 +188,24 @@ function measure<T>(cb: () => T, label: string, shouldLog: boolean = true): T {
 
 const nameRecordsGroupedByName = repo.getAllByName();
 
-const res = measure(() => buildDemographicData(nameRecordsGroupedByName), 'buildQuantileData');
+const periodsData = yearPeriods.map(period => {
+  return measure(
+    () => buildDemographicData(nameRecordsGroupedByName, period),
+    `Built demographic stats for ${period.start}-${period.end} in`
+  );
+})
+
+const stats = {
+  quantileLabels,
+  periodsData,
+} as DemographicStats;
+
+const savePath = `${dataPath}/demographic-stats.json`;
+
+console.log(`Saving demographic stats in ${savePath}...`)
 
 writeFileSync(
-  `${dataPath}/demographic-data.json`,
-  JSON.stringify(res),
+  savePath,
+  JSON.stringify(stats),
   'utf8'
 );

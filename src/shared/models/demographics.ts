@@ -1,3 +1,5 @@
+import { YearPeriod } from "./year-periods";
+
 /**
  * Bitmask of at least one specific gender and one specific religion.
  */
@@ -99,3 +101,37 @@ export function parseReligion(value: string): ReligionBitmask {
     }
     return ReligionBitmasks[value as keyof typeof ReligionBitmasks];
 }
+
+export type ReligionName = keyof typeof ReligionBitmasks;
+export type GenderName = keyof typeof GenderBitmasks;
+
+
+export interface DemographicGroupStats {
+    nameTotal: number;
+    populationTotal: number;
+    quantiles: number[];
+    topNames: {
+        name: string;
+        total: number
+    }[];
+}
+
+export interface DemographicPeriodStats {
+    yearPeriod: YearPeriod,
+    byReligionAndGender: Record<
+        ReligionName,
+        Record<GenderName, DemographicGroupStats>
+    >;
+}
+
+export interface DemographicStats {
+    quantileLabels: {
+        type: 'decile' | 'percentile',
+        value: number
+    }[];
+    periodsData: readonly DemographicPeriodStats[];
+}
+
+export const religionNames = Array.from(Object.keys(ReligionBitmasks)) as ReligionName[];
+
+export const genderNames = Array.from(Object.keys(GenderBitmasks)) as GenderName[];

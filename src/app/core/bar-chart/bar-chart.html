@@ -1,0 +1,28 @@
+<div class="chart" [class]="mode" [style.--label-count]="this.labelFields.length + (primaryAxis ? 1 : 0)"
+    [style.--datasets-count]="this.data.length">
+    <table>
+        <thead class="visually-hidden">
+            <tr>
+                <th *ngIf="primaryAxis" scope="col">{{ primaryAxis === 'index' ? '' :primaryAxis.label }}</th>
+                <th *ngFor="let field of fields" scope="col">{{ field.label || field.key }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of data; index as i">
+                <th *ngIf="primaryAxis" scope="row">{{
+                    primaryAxis === 'index'
+                    ? (mode === 'column' ? i + 1 : `${i + 1}.`)
+                    : row[primaryAxis.key]
+                    }}</th>
+                <td *ngFor="let field of labelFields" class="chart-label">
+                    {{ row[field.key] }}
+                </td>
+                <td *ngFor="let field of valueFields"
+                    [style.--size]="(row[field.key] ?? 0) / (maxValuePerField[field.key] || 1)"
+                    [style.--color]="field.color">
+                    <span class="chart-data">{{ row[field.key] | number:'1.0-0' }}</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

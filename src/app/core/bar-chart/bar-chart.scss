@@ -1,0 +1,143 @@
+.chart {
+    display: grid;
+    margin-block: 1rem;
+
+    table {
+        display: grid;
+    }
+
+    td,
+    th {
+        display: block;
+    }
+
+    tbody {
+        display: grid;
+
+        tr {
+            display: grid;
+            align-items: center;
+            overflow: visible;
+        }
+
+        td:not(.chart-label) {
+            padding: 0;
+            border-radius: 5px;
+            background-color: var(--color, var(--mat-sys-secondary-container));
+            color: var(--mat-sys-on-secondary-container);
+        }
+
+        .chart-data {
+            display: block;
+            padding: 0.25em 0.5ch;
+            border-radius: 5px;
+        }
+    }
+}
+
+.chart.bar,
+.chart.bar-list {
+    tbody {
+        grid-auto-flow: row;
+        grid-auto-rows: 1fr;
+        grid-template-columns: repeat(var(--label-count, 0), auto) 1fr;
+
+        tr {
+            grid-column: 1 / -1;
+            grid-template-columns: subgrid;
+        }
+
+        td:not(.chart-label) {
+            inline-size: calc(max(1px, var(--size) * 100%));
+            // min-inline-size: max-content; // no need when vertical, overflow visible
+        }
+
+        .chart-data {
+            inline-size: max-content;
+            margin-inline-start: auto;
+        }
+    }
+}
+
+.chart.bar {
+    tbody {
+        gap: 1rem 1ch;
+
+        td:not(.chart-label) {
+            grid-column: -1;
+        }
+    }
+}
+
+.chart.bar-list {
+    tbody {
+        td:not(.chart-label) {
+            grid-column: 1 / -1;
+            margin-block: 1ch 1rem;
+        }
+    }
+}
+
+.chart.column {
+    min-block-size: min(15rem, 80dvh);
+    overflow-x: auto;
+    overflow-y: visible;
+
+    // leave room for data tooltip on hover
+    padding-inline: 2ch;
+    padding-block-start: 2rem;
+
+    // `scrollbar-gutter: stable;` doesn't currently work on horizontal scrollbars
+    padding-block-end: 1em;
+
+    tbody {
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        grid-template-rows:
+            repeat(var(--value-count, 1), 1fr)
+            repeat(var(--label-count, 0), auto);
+        gap: 1ch;
+
+        th,
+        .chart-label {
+            padding-inline: 0.25ch;
+        }
+
+        tr {
+            grid-row: 1 / -1;
+            grid-auto-flow: column;
+            grid-template-columns: 1fr;
+            grid-template-rows: subgrid;
+            align-items: end;
+        }
+
+        .chart-label {
+            text-align: center;
+        }
+
+        td:not(.chart-label) {
+            position: relative;
+            grid-column: 1;
+            block-size: calc(max(1px, var(--size) * 100%));
+            justify-items: center;
+        }
+    }
+
+    .chart-data {
+        z-index: 1;
+        position: absolute;
+        left: 50%;
+        bottom: 100%;
+        transform: translateX(calc(-50%));
+        opacity: 0;
+        user-select: none;
+
+        @media (prefers-reduced-motion: no-preference) {
+            transition: opacity 200ms;
+        }
+    }
+
+    tr:hover .chart-data {
+        opacity: 1;
+    }
+}

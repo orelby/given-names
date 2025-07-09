@@ -8,8 +8,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { NameCsvRepository } from './../src/app/names/name-csv-repository';
 import { environment } from './../src/environments/environment';
 import { getTotalByYearPeriod, NameRecord } from '@shared/models/name-records';
-import { GenderBitmasks, ReligionBitmasks, SingleDemographic, DemographicStats, DemographicGroupStats, DemographicPeriodStats } from '@shared/models/demographics';
-import { religionNames, genderNames } from '@shared/models/demographics';
+import { SingleDemographic, DemographicStats, DemographicPeriodStats, religions, genders } from '@shared/models/demographics';
 import { YearPeriod, yearPeriods } from '@shared/models/year-periods';
 
 
@@ -41,12 +40,35 @@ const quantileLabels: DemographicStats['quantileLabels'] = quantileFractions.map
   }
 });
 
-// Simple "higher" interpolation quantile
-function computeQuantiles(sortedValues: Entry[], fractions: number[]): number[] {
-  return fractions.map(f => {
-    const idx = Math.min(Math.max(0, Math.ceil(f * sortedValues.length) - 1), sortedValues.length - 1);
-    return sortedValues[idx].total;
-  });
+function clamp(minValue: number, value: number, maxValue: number) {
+  return Math.max(minValue, Math.min(value, maxValue));
+}
+
+
+function lastIdxOfQuantile(fraction: number, length: number) {
+  return clamp(1, Math.ceil(fraction * length), length) - 1;
+}
+
+// Simple "higher" interpolation quantile threshold
+function computeQuantileThresholds(sortedValues: Entry[], fractions: number[]): number[] {
+  return fractions.map(f =>
+    sortedValues[lastIdxOfQuantile(f, sortedValues.length)].total
+  );
+}
+
+function computeQuantileTotals(sortedValues: Entry[], fractions: number[]): number[] {
+  const totals = fractions.map(() => 0);
+
+  let curIdx = 0;
+  for (const [i, f] of fractions.entries()) {
+    const lastIdx = lastIdxOfQuantile(f, sortedValues.length);
+
+    while (curIdx <= lastIdx) {
+      totals[i] += sortedValues[curIdx++].total;
+    }
+  }
+
+  return totals;
 }
 
 function getValueFromEntries(
@@ -121,39 +143,53 @@ function buildDemographicData(
   const { entriesByDemographic, entriesGroupedByName } = measure(
     () => buildEntries(byName, yearPeriod),
     'buildDemographicData__buildEntries',
-    false
+    2
   );
 
   const byReligionAndGender = {} as DemographicPeriodStats['byReligionAndGender'];
 
-  for (const religionName of religionNames) {
-    const religionBitmask = ReligionBitmasks[religionName];
-
-    byReligionAndGender[religionName] = Object.fromEntries(
-      genderNames.map(n => [n, []])
+  for (const religion of religions) {
+    byReligionAndGender[religion.slug] = Object.fromEntries(
+      genders.map(gender => [gender.slug, []])
     ) as any;
 
-    for (const genderName of genderNames) {
-      const genderBitmask = GenderBitmasks[genderName];
-      const demographicBitmask = religionBitmask | genderBitmask;
+    for (const gender of genders) {
+      const demographicBitmask = religion.bitmask | gender.bitmask;
 
       const entries = entriesByDemographic.get(demographicBitmask)
         ?? collectEntries(entriesGroupedByName, demographicBitmask);
 
+      if (entries.length < 100) {
+        console.warn(
+          `Less than 100 entries for [${religion.slug}][${gender.slug}}].`
+          + ' Things may break.'
+        );
+      }
+
       measure(
         () => sortEntries(entries),
-        `buildDemographicData__[${religionName}][${genderName}]__sortEntries`,
-        false
+        `buildDemographicData__[${religion.slug}][${gender.slug}]__sortEntries`,
+        2
       );
 
-      byReligionAndGender[religionName][genderName] = {
+      const quantileThresholds = measure(
+        () => computeQuantileThresholds(entries, quantileFractions),
+        `buildDemographicData__[${religion.slug}][${gender.slug}]__computeQuantileThresholds`,
+        3
+      );
+
+      const quantileTotals = measure(
+        () => computeQuantileTotals(entries, quantileFractions),
+        `buildDemographicData__[${religion.slug}][${gender.slug}]__computeQuantileTotals`,
+        3
+      );
+
+
+      byReligionAndGender[religion.slug][gender.slug] = {
         nameTotal: entries.length,
         populationTotal: entries.reduce((acc, cur) => acc + cur.total, 0),
-        quantiles: measure(
-          () => computeQuantiles(entries, quantileFractions),
-          `buildDemographicData__[${religionName}][${genderName}]__computeQuantiles`,
-          false
-        ),
+        quantileThresholds,
+        quantileTotals,
         topNames: entries.slice(-10).reverse(),
       };
     }
@@ -167,7 +203,10 @@ function buildDemographicData(
   return result;
 }
 
-function measure<T>(cb: () => T, label: string, shouldLog: boolean = true): T {
+
+const MAX_LOG_VERBOSITY = 0;
+
+function measure<T>(cb: () => T, label: string, verbosity: number = 0): T {
   // if (global.gc) {
   //   global.gc();
   // } else {
@@ -175,7 +214,7 @@ function measure<T>(cb: () => T, label: string, shouldLog: boolean = true): T {
   // }
 
   let res: T;
-  if (shouldLog) {
+  if (verbosity <= MAX_LOG_VERBOSITY) {
     const timeStart = performance.now();
     res = cb();
     const timeEnd = performance.now();
@@ -197,7 +236,7 @@ const periodsData = yearPeriods.map(period => {
 
 const stats = {
   quantileLabels,
-  periodsData,
+  periods: periodsData,
 } as DemographicStats;
 
 const savePath = `${dataPath}/demographic-stats.json`;

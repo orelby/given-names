@@ -102,14 +102,29 @@ export function parseReligion(value: string): ReligionBitmask {
     return ReligionBitmasks[value as keyof typeof ReligionBitmasks];
 }
 
-export type ReligionName = keyof typeof ReligionBitmasks;
-export type GenderName = keyof typeof GenderBitmasks;
+export function getDemographicDescription(religion: Religion, gender: Gender) {
+    const parts = [];
 
+    if (gender.bitmask !== GenderBitmasks.All) {
+        parts.push(gender.text);
+    }
+
+    if (religion.bitmask !== ReligionBitmasks.All) {
+        if (gender.bitmask === GenderBitmasks.Women) {
+            parts.push(religion.text.replace('ם', 'ות'));
+        } else {
+            parts.push(religion.text);
+        }
+    }
+
+    return parts.join(' ');
+}
 
 export interface DemographicGroupStats {
     nameTotal: number;
     populationTotal: number;
-    quantiles: number[];
+    quantileThresholds: number[];
+    quantileTotals: number[];
     topNames: {
         name: string;
         total: number
@@ -119,8 +134,11 @@ export interface DemographicGroupStats {
 export interface DemographicPeriodStats {
     yearPeriod: YearPeriod,
     byReligionAndGender: Record<
-        ReligionName,
-        Record<GenderName, DemographicGroupStats>
+        Religion['slug'],
+        Record<
+            Gender['slug'],
+            DemographicGroupStats
+        >
     >;
 }
 
@@ -129,9 +147,5 @@ export interface DemographicStats {
         type: 'decile' | 'percentile',
         value: number
     }[];
-    periodsData: readonly DemographicPeriodStats[];
+    periods: readonly DemographicPeriodStats[];
 }
-
-export const religionNames = Array.from(Object.keys(ReligionBitmasks)) as ReligionName[];
-
-export const genderNames = Array.from(Object.keys(GenderBitmasks)) as GenderName[];

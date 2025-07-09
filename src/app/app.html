@@ -1,7 +1,7 @@
 <app-header></app-header>
 
 <form class="search-form" (ngSubmit)="autoCompleteTrigger.closePanel(); onSearch()">
-  <mat-form-field class="example-full-width">
+  <mat-form-field class="example-full-width" subscriptSizing="dynamic">
     <!-- <mat-label>חיפוש שם</mat-label> -->
     <input type="text" placeholder="חיפוש שם..." matInput [formControl]="nameControl" [matAutocomplete]="autoComplete"
       #autoCompleteTrigger="matAutocompleteTrigger" autofocus>

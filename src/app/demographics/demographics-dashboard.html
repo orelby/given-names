@@ -1,0 +1,101 @@
+<nav class="demographic-selection" aria-label="קבוצת דמוגרפיה">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>מגדר</mat-label>
+        <mat-select [value]="$genderSlug()" (selectionChange)="onDemographicSelection('gender', $event)">
+            @for (gender of genders; track gender) {
+            <mat-option [value]="gender.slug">{{gender.text}}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>דת</mat-label>
+        <mat-select [value]="$religionSlug()" (selectionChange)="onDemographicSelection('religion', $event)">
+            @for (religion of religions; track religion) {
+            <mat-option [value]="religion.slug">{{religion.text}}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>תקופה</mat-label>
+        <mat-select [value]="$periodSlug()" (selectionChange)="onDemographicSelection('period', $event)">
+            @for (yearPeriod of yearPeriods; track $index) {
+            <mat-option [value]="yearPeriod.slug">{{yearPeriod.description}}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+</nav>
+
+<main>
+
+    <h1>
+        <span>שמות ישראל: </span><wbr>
+        <span>{{$demographicTitle() ? `${$demographicTitle()} – ` : ''}}</span><wbr>
+        <span dir="rtl">{{$period().description}}</span><wbr>
+        <span dir="rtl"> ({{$period() | yearPeriod }})</span>
+    </h1>
+
+
+    @if ($periodStats(); as periodStats) {
+    @let groupStats = periodStats.byReligionAndGender[$religion().slug][$gender().slug];
+
+    <mat-chip-set class="demographic-profile">
+        <mat-chip>{{groupStats.nameTotal | number:'1.0-0'}} שמות</mat-chip>
+        <mat-chip>{{groupStats.populationTotal | number:'1.0-0'}} אנשים</mat-chip>
+        <mat-chip>{{1000 * groupStats.nameTotal / groupStats.populationTotal |
+            number:'1.0-1'}} שמות ל-1,000 איש</mat-chip>
+        <mat-chip>{{groupStats.populationTotal / groupStats.nameTotal |
+            number:'1.0-1'}} אנשים לשם</mat-chip>
+    </mat-chip-set>
+
+    <article class="top-names">
+        <h2>10 השמות הכי פופולריים</h2>
+        @let topNameFields = [{key: 'name', label: 'שם'}, {key:'total', label: 'סהכ', isValue: true}];
+        <bar-chart [data]="groupStats.topNames" [fields]="topNameFields" mode="bar"></bar-chart>
+    </article>
+
+    <article class="deciles">
+        <h2>התפלגות השמות</h2>
+
+        <section>
+            <h3>עשירונים – תקרת אוכלוסייה</h3>
+            <bar-chart [data]="getDecileFields(groupStats)"
+                [fields]="[{key:'ceiling', label: 'תקרת אוכלוסייה', isValue: true}]"
+                [primaryAxis]="{key: 'index', label: 'עשירון'}" mode="column"></bar-chart>
+        </section>
+
+        <section>
+            <h3>העשירון העליון – תקרת אוכלוסייה</h3>
+            <bar-chart [data]="getTopDecileFields(groupStats)"
+                [fields]="[{key:'ceiling', label: 'תקרת אוכלוסייה', isValue: true}]"
+                [primaryAxis]="{key: 'index', label: 'מאיון (אחוזון)'}" mode="column"></bar-chart>
+        </section>
+
+        <section>
+            <h3>עשירונים – סה"כ אוכלוסייה</h3>
+            <bar-chart [data]="getDecileFields(groupStats)"
+                [fields]='[{key:"total", label: `סה"כ אוכלוסייה`, isValue: true}]'
+                [primaryAxis]="{key: 'index', label: 'עשירון'}" mode="column"></bar-chart>
+        </section>
+
+        <section>
+            <h3>העשירון העליון – סה"כ אוכלוסייה</h3>
+            <bar-chart [data]="getTopDecileFields(groupStats)"
+                [fields]='[{key:"total", label: `סה"כ אוכלוסייה`, isValue: true}]'
+                [primaryAxis]="{key: 'index', label: 'מאיון (אחוזון)'}" mode="column"></bar-chart>
+        </section>
+    </article>
+
+    } @else if ($stats.isLoading()) {
+
+    <p>בטעינה...</p>
+
+    } @else {
+
+    <p>התרחשה שגיאה בעת טעינת הנתונים.</p>
+    <p>נא לרענן את העמוד או לנסות שוב מאוחר יותר.</p>
+
+    }
+
+</main>

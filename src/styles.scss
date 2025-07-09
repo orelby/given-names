@@ -1,10 +1,14 @@
 @use "@angular/material" as mat;
 
-*, *::before, *::after {
-  box-sizing: border-box;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
 $font-family: "Segoe UI", sans-serif;
+
+$density: -2;
 
 $theme: mat.define-theme(
     (
@@ -16,7 +20,7 @@ $theme: mat.define-theme(
             brand-family: $font-family
         ),
         density: (
-            scale: -2
+            scale: $density
         )
     )
 );
@@ -24,8 +28,8 @@ $theme: mat.define-theme(
 html {
     min-width: 20ch;
     height: 100%;
-    margin: 0;
     padding: 0;
+    margin: 0;
     scrollbar-gutter: stable;
     color-scheme: light;
 
@@ -33,9 +37,11 @@ html {
         (
             color: mat.$azure-palette,
             typography: $font-family,
-            density: -2
+            density: $density
         )
     );
+
+    @include mat.chips-density(0);
 
     --gender-color-all: #{mat.m2-get-color-from-palette(mat.$m2-gray-palette, 600)};
     --gender-color-men: #{mat.m2-get-color-from-palette(mat.$m2-blue-palette, 400)};
@@ -58,16 +64,52 @@ body {
     min-height: 100%;
     max-width: 100ch;
     margin: 0 auto;
-    padding: 1rem 1ch 2rem;
+    padding: 1rem 0 2rem;
     font-family: $font-family;
 }
 
 // @include mat.typography-hierarchy($theme);
 
-h1, h2, h3, h4, h5, h6 {
-  text-wrap: balance;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-block: 1rem;
+    text-wrap: balance;
+}
+
+h1 {
+    font-size: 1.8em;
+}
+
+h2 {
+    font-size: 1.5em;
 }
 
 p {
-  text-wrap: pretty;
+    text-wrap: pretty;
+}
+
+.visually-hidden {
+    height: 1px;
+    width: 1px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    position: absolute !important;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.mdc-evolution-chip-set__chips {
+    // for demographics-dashboard. no option to customize.
+    justify-content: center;
+}
+
+main {
+    margin-inline: 1ch;
 }

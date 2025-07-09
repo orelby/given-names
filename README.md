@@ -1,3 +1,14 @@
+> [!WARNING]  
+> This project is a work in progress and is unstable. Commits can and will be force-pushed to main.
+
+> [!NOTE]
+> To set up the data for this project, currently you should:
+>   1. [Download the Excel file from the CBS's website](https://www.cbs.gov.il/he/subjects/Pages/%D7%A9%D7%9E%D7%95%D7%AA.aspx#cbsInfographicsDiv) and save it as `./data/2024-12-09/given-names.xlsx`.
+>   2. Setup a Python environment and run `./scripts/build_name_data.py`.
+>   3. Copy `./data/2024-12-09/given-names.csv` into `./public/data/2024-12-09`.
+>   4. Setup a Node.js environment and run `npm run build:data`.
+
+
 # GivenNames
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.3.

@@ -40,20 +40,8 @@ export class App implements OnInit {
   protected router = inject(Router);
 
   constructor() {
-    afterNextRender(() => setTimeout(
-      function setInitialFocusOnSearchInput() {
-        const targetElement = document.querySelector('.search-form input') as HTMLElement | undefined;
-        if (
-          targetElement &&
-          (document.activeElement === document.body || document.activeElement === null)
-        ) {
-          targetElement.focus();
-        }
-      },
-
-      // workaround (the auto focus is quickly removed for some reason)
-      100
-    ));
+    // workaround (the auto focus is quickly removed for some reason)
+    afterNextRender(() => setTimeout(setInitialFocusOnSearchInput, 100));
   }
 
   ngOnInit() {
@@ -69,5 +57,19 @@ export class App implements OnInit {
 
   onSearch() {
     this.router.navigate(['/name', this.nameControl.value]);
+  }
+}
+
+function setInitialFocusOnSearchInput() {
+  const targetElement = document.querySelector(
+    '.search-form input'
+  ) as HTMLElement | undefined;
+
+  if (
+    targetElement &&
+    (document.activeElement === document.body
+      || document.activeElement === null)
+  ) {
+    targetElement.focus();
   }
 }

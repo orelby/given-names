@@ -70,6 +70,10 @@ $theme: mat.define-theme(
     --gender-color-men: #{mat.m2-get-color-from-palette(mat.$m2-blue-palette, 400)};
     --gender-color-women: #{mat.m2-get-color-from-palette(mat.$m2-pink-palette, 400)};
 
+    --gender-background-men: light-dark(hsl(200 70% 85%), hsl(200 50% 30%));
+    --gender-background-women: light-dark(hsl(330 70% 91%), hsl(330deg 40% 30%));
+    --gender-background-all: color-mix(in lab, var(--gender-background-women), var(--gender-background-men));
+
     --religion-color-all: var(--gender-color-all);
 
     // --religion-color-jewish: #184d8b;

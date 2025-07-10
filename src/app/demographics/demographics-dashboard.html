@@ -52,6 +52,8 @@
 
     <article class="top-names">
         <h2>{{groupStats.topNames.length}} השמות הכי פופולריים</h2>
+        @let topNameFields = [{key: 'name', label: 'שם'}, {key:'total', label: 'סהכ', isValue: true, color:
+        `var(--gender-background-${gender.slug})`}];
         <bar-chart [data]="groupStats.topNames" [fields]="topNameFields" mode="bar"></bar-chart>
     </article>
 

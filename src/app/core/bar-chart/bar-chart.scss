@@ -18,12 +18,20 @@
             display: grid;
             align-items: center;
             overflow: visible;
+
+            &:hover {
+                td:not(.chart-label) {
+                    background-color: hsl(from var(--_bg) h s calc(l * 0.95));
+                }
+            }
         }
 
         td:not(.chart-label) {
+            --_bg: var(--color, var(--mat-sys-secondary-container));
+
             padding: 0;
             border-radius: 5px;
-            background-color: var(--color, var(--mat-sys-secondary-container));
+            background-color: var(--_bg);
             color: var(--mat-sys-on-secondary-container);
         }
 
@@ -130,7 +138,6 @@
         bottom: 100%;
         transform: translateX(calc(-50%));
         opacity: 0;
-        user-select: none;
 
         @media (prefers-reduced-motion: no-preference) {
             transition: opacity 200ms;

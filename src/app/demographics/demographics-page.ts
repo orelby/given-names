@@ -1,38 +1,32 @@
-import { Component, computed, input, Signal, inject, signal, model, effect } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { DecimalPipe, PercentPipe } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatIcon } from '@angular/material/icon';
-import { MatTooltip } from '@angular/material/tooltip';
-import { MatTabsModule } from '@angular/material/tabs';
-
-import { religions, genders, Religion, GenderBitmasks, ReligionBitmasks, Gender, DemographicGroupStats, getDemographicDescription } from '@shared/models/demographics';
-import { DemographicStats } from '@shared/models/demographics';
 import { environment } from 'src/environments/environment';
-import { catchError, map, of, retry, shareReplay, startWith, throwError } from 'rxjs';
-import { HttpClient, HttpErrorResponse, httpResource } from '@angular/common/http';
-import { MatListItem, MatNavList } from '@angular/material/list';
+import { Component, computed, inject, effect } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { httpResource } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { MatInputModule, MatLabel } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { fullDataPeriod, YearPeriod, yearPeriods } from '@shared/models/year-periods';
-import { YearPeriodPipe } from '@shared/pipes/year-period-pipe';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule, MatLabel } from '@angular/material/input';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import { religions, genders, DemographicGroupStats, getDemographicDescription } from '@shared/models/demographics';
+import { YearPeriodPipe } from '@shared/pipes/year-period-pipe';
+import { yearPeriods, fullDataPeriod } from '@shared/models/year-periods';
+import { DemographicStats } from '@shared/models/demographics';
 import { BarChart } from "../core/bar-chart/bar-chart";
 
 @Component({
-  selector: 'app-demographic-stats',
+  selector: 'app-demographics-page',
   standalone: true,
-  imports: [MatChipsModule, MatCardModule, MatIcon, MatTabsModule, DecimalPipe,
-    RouterModule, MatFormFieldModule, MatSelectModule,
-    MatInputModule, FormsModule, MatLabel,
-    YearPeriodPipe, BarChart],
-  templateUrl: './demographics-dashboard.html',
-  styleUrl: './demographics-dashboard.scss',
+  imports: [
+    RouterModule, FormsModule, DecimalPipe,
+    MatChipsModule, MatLabel, MatFormFieldModule, MatInputModule, MatSelectModule,
+    YearPeriodPipe, BarChart
+  ],
+  templateUrl: './demographics-page.html',
+  styleUrl: './demographics-page.scss',
 })
-export class DemographicsDashboard {
+export class DemographicsPage {
   protected router = inject(Router);
 
   protected $queryParams = toSignal(inject(ActivatedRoute).queryParamMap);
@@ -76,9 +70,6 @@ export class DemographicsDashboard {
   protected readonly yearPeriods = yearPeriods;
   protected readonly religions = religions;
   protected readonly genders = genders;
-  protected readonly GenderBitmasks = GenderBitmasks;
-  protected readonly ReligionBitmasks = ReligionBitmasks;
-  protected readonly Math = Math;
 
   constructor() {
     effect(() => {

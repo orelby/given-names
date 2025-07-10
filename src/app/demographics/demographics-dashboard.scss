@@ -32,18 +32,13 @@ $max-inline-size: 70ch;
 
     background: var(--mat-sys-background);
 
-    @media (width > $max-inline-size) {
-        border-end-start-radius: 1rem;
-        border-end-end-radius: 1rem;
-    }
-
     @media ((prefers-reduced-motion: no-preference) 
         and (prefers-reduced-transparency: no-preference)) {
         background: linear-gradient(
             to bottom,
             hsl(from var(--mat-sys-background) h s l / 0.3) 0%,
-            hsl(from var(--mat-sys-background) h s l / 0.7) calc(var(--_padding_block) / 2),
-            hsl(from var(--mat-sys-background) h s l / 0.7) 100%
+            hsl(from var(--mat-sys-background) h s l / 0.8) calc(var(--_padding_block) / 2),
+            hsl(from var(--mat-sys-background) h s l / 0.8) 100%
         );
 
         backdrop-filter: blur(8px);
@@ -58,6 +53,11 @@ $max-inline-size: 70ch;
 
     .mat-mdc-form-field {
         min-inline-size: 10ch;
+        max-inline-size: 15ch;
+
+        &.large-selection {
+            max-inline-size: 20ch;
+        }
     }
 }
 

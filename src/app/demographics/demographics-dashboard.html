@@ -17,7 +17,7 @@
         </mat-select>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="large-selection">
         <mat-label>תקופה</mat-label>
         <mat-select [value]="$periodSlug()" (selectionChange)="onDemographicSelection('period', $event)">
             @for (yearPeriod of yearPeriods; track $index) {

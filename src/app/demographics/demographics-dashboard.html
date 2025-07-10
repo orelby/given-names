@@ -38,7 +38,8 @@
 
 
     @if ($periodStats(); as periodStats) {
-    @let groupStats = periodStats.byReligionAndGender[$religion().slug][$gender().slug];
+    @let gender = $gender();
+    @let groupStats = periodStats.byReligionAndGender[$religion().slug][gender.slug];
 
     <mat-chip-set class="demographic-profile">
         <mat-chip>{{groupStats.nameTotal | number:'1.0-0'}} שמות</mat-chip>
@@ -50,8 +51,7 @@
     </mat-chip-set>
 
     <article class="top-names">
-        <h2>10 השמות הכי פופולריים</h2>
-        @let topNameFields = [{key: 'name', label: 'שם'}, {key:'total', label: 'סהכ', isValue: true}];
+        <h2>{{groupStats.topNames.length}} השמות הכי פופולריים</h2>
         <bar-chart [data]="groupStats.topNames" [fields]="topNameFields" mode="bar"></bar-chart>
     </article>
 

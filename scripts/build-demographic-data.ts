@@ -184,13 +184,19 @@ function buildDemographicData(
         3
       );
 
+      const topNameCount = (
+        entries.length > 1000
+        && quantileThresholds[quantileThresholds.length - 2] > 100
+      ) ? 20 : 10;
+      const topNames = entries.slice(-topNameCount).reverse();
+
 
       byReligionAndGender[religion.slug][gender.slug] = {
         nameTotal: entries.length,
         populationTotal: entries.reduce((acc, cur) => acc + cur.total, 0),
         quantileThresholds,
         quantileTotals,
-        topNames: entries.slice(-10).reverse(),
+        topNames,
       };
     }
   }

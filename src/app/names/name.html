@@ -9,8 +9,7 @@
 <div class="religion-bar">
     @for (religion of religions; track religion) {
     @if (religion.slug !== "all") {
-    <div class="religion-segment" [style.flex]="getReligionTotal(religion)"
-        [class]="'religion-' + religion.slug">
+    <div class="religion-segment" [style.flex]="getReligionTotal(religion)" [class]="'religion-' + religion.slug">
     </div>
     }
     }

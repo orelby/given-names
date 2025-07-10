@@ -9,6 +9,12 @@ $max-inline-size: 70ch;
 }
 
 .demographic-selection {
+    @include mat.form-field-density(-3);
+}
+
+.demographic-selection {
+    --_padding_block: 1rem;
+
     display: grid;
     grid-auto-flow: column;
     justify-content: flex-start;
@@ -16,40 +22,49 @@ $max-inline-size: 70ch;
     gap: 1ch;
 
     inline-size: 100%;
-    padding: 1rem 1ch;
+    padding: var(--_padding_block) 1ch;
     overflow-x: auto;
 
     position: sticky;
     inset-block-start: 0;
     inset-inline: 0;
-    z-index: 1;
+    z-index: 2;
 
     background: var(--mat-sys-background);
-    backdrop-filter: blur(8px);
+
+    @media (width > $max-inline-size) {
+        border-end-start-radius: 1rem;
+        border-end-end-radius: 1rem;
+    }
+
+    @media ((prefers-reduced-motion: no-preference) 
+        and (prefers-reduced-transparency: no-preference)) {
+        background: linear-gradient(
+            to bottom,
+            hsl(from var(--mat-sys-background) h s l / 0.3) 0%,
+            hsl(from var(--mat-sys-background) h s l / 0.7) calc(var(--_padding_block) / 2),
+            hsl(from var(--mat-sys-background) h s l / 0.7) 100%
+        );
+
+        backdrop-filter: blur(8px);
+
+        mask-image: linear-gradient(
+            to bottom,
+            black 0%,
+            black calc(100% - var(--_padding_block) / 2),
+            transparent 100%
+        );
+    }
 
     .mat-mdc-form-field {
         min-inline-size: 10ch;
     }
 }
 
+// keep outside of .demographic-selection since it's in an overlay
 mat-option {
-    // keep outside of .demographic-selection since it's in an overlay
-
-    --mat-option-label-text-size: 0.8rem;
-    padding: 1ch 1rem;
-}
-
-@media (width > $max-inline-size) {
-    .demographic-selection {
-        border-end-start-radius: 1rem;
-        border-end-end-radius: 1rem;
-    }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .demographic-selection {
-        background: hsl(from var(--mat-sys-background) h s l / 0.8);
-    }
+    --mat-option-label-text-size: var(--mat-sys-label-large-size);
+    padding: 1ch 1.5ch;
 }
 
 .demographic-profile {
@@ -72,11 +87,3 @@ h1 span {
     max-width: max-content;
     margin: 0 auto;
 }
-
-// .chart {
-
-//         td:not(.chart-label) {
-//             background-color: var(--color, var(--mat-sys-secondary-container));
-//             color: var(--mat-sys-on-secondary-container);
-//         }
-//     }

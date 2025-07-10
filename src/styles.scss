@@ -1,14 +1,18 @@
 @use "@angular/material" as mat;
 
+// reset
+
 *,
 *::before,
 *::after {
     box-sizing: border-box;
 }
 
+// material
+
 $font-family: "Segoe UI", sans-serif;
 
-$density: -2;
+$density: -1;
 
 $theme: mat.define-theme(
     (
@@ -25,14 +29,7 @@ $theme: mat.define-theme(
     )
 );
 
-html {
-    min-width: 20ch;
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    scrollbar-gutter: stable;
-    color-scheme: light;
-
+:root {
     @include mat.theme(
         (
             color: mat.$azure-palette,
@@ -40,8 +37,34 @@ html {
             density: $density
         )
     );
+}
 
-    @include mat.chips-density(0);
+// @include mat.typography-hierarchy($theme);
+
+// material overrides
+:root {
+    .mdc-evolution-chip-set__chips {
+        // for demographics-dashboard. no option to customize.
+        justify-content: center;
+    }
+
+    .mat-mdc-form-field-type-mat-select.mat-form-field-appearance-outline .mdc-notched-outline__notch {
+        // for demographic selection in mobile. prevents cropping of outlined label.
+        text-overflow: ellipsis;
+        max-inline-size: calc(100% - 3ch);
+    }
+}
+
+// global app styles
+
+:root {
+    min-width: 20ch;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    font: var(--mat-sys-body-medium);
+    scrollbar-gutter: stable;
+    color-scheme: light;
 
     --gender-color-all: #{mat.m2-get-color-from-palette(mat.$m2-gray-palette, 600)};
     --gender-color-men: #{mat.m2-get-color-from-palette(mat.$m2-blue-palette, 400)};
@@ -65,10 +88,7 @@ body {
     max-width: 100ch;
     margin: 0 auto;
     padding: 1rem 0 2rem;
-    font-family: $font-family;
 }
-
-// @include mat.typography-hierarchy($theme);
 
 h1,
 h2,
@@ -77,6 +97,7 @@ h4,
 h5,
 h6 {
     margin-block: 1rem;
+    line-height: 1.25em;
     text-wrap: balance;
 }
 
@@ -103,11 +124,6 @@ p {
     overflow: hidden;
     white-space: nowrap;
     user-select: none;
-}
-
-.mdc-evolution-chip-set__chips {
-    // for demographics-dashboard. no option to customize.
-    justify-content: center;
 }
 
 main {

@@ -43,15 +43,20 @@ $theme: mat.define-theme(
 
 // material overrides
 :root {
+    // for demographics-dashboard. no option to customize.
     .mdc-evolution-chip-set__chips {
-        // for demographics-dashboard. no option to customize.
         justify-content: center;
     }
 
+    // for demographic selection in mobile. prevents cropping of outlined label.
     .mat-mdc-form-field-type-mat-select.mat-form-field-appearance-outline .mdc-notched-outline__notch {
-        // for demographic selection in mobile. prevents cropping of outlined label.
         text-overflow: ellipsis;
         max-inline-size: calc(100% - 3ch);
+    }
+
+    // buggy in RTL
+    [dir="rtl"] .mdc-list-item--with-leading-icon .mdc-list-item__start {
+        margin-inline: 0.5ch;
     }
 }
 
@@ -91,7 +96,7 @@ body {
     min-height: 100%;
     max-width: 100ch;
     margin: 0 auto;
-    padding: 1rem 0 2rem;
+    padding: 0 0 2rem;
 }
 
 h1,
@@ -113,7 +118,8 @@ h2 {
     font-size: 1.5em;
 }
 
-p {
+p,
+li {
     text-wrap: pretty;
 }
 
@@ -132,4 +138,17 @@ p {
 
 main {
     margin-inline: 1ch;
+}
+
+ul,
+li {
+    margin-block-start: 0;
+}
+
+li {
+    margin-block-end: 1rem;
+
+    &:last-child {
+        margin-block-end: 0;
+    }
 }

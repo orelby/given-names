@@ -13,15 +13,16 @@ import { religions, genders, DemographicGroupStats, getDemographicDescription } 
 import { YearPeriodPipe } from '@shared/pipes/year-period-pipe';
 import { yearPeriods, fullDataPeriod } from '@shared/models/year-periods';
 import { DemographicStats } from '@shared/models/demographics';
-import { BarChart } from "../core/bar-chart/bar-chart";
+import { Chart, ChartDataAxis, ChartDataset } from "../core/chart/chart";
 
 @Component({
   selector: 'app-demographics-page',
   standalone: true,
   imports: [
-    RouterModule, FormsModule, DecimalPipe,
+    RouterModule, FormsModule,
     MatChipsModule, MatLabel, MatFormFieldModule, MatInputModule, MatSelectModule,
-    YearPeriodPipe, BarChart
+    YearPeriodPipe, DecimalPipe,
+    Chart, ChartDataset, ChartDataAxis,
   ],
   templateUrl: './demographics-page.html',
   styleUrl: './demographics-page.scss',
@@ -94,21 +95,27 @@ export class DemographicsPage {
     });
   }
 
-  protected getDecileFields(groupStats: DemographicGroupStats) {
+  protected $groupStats = computed(() =>
+    this.$periodStats()?.byReligionAndGender[this.$religion().slug][this.$gender().slug]
+  );
+
+  protected $deciles = computed(() => {
     const start = 0;
-    return groupStats.quantileThresholds.slice(start, 9).map((ceiling, i) => ({
+    const groupStats = this.$groupStats();
+    return groupStats?.quantileThresholds.slice(start, 9).map((ceiling, i) => ({
       index: 1 + i,
       ceiling,
       total: groupStats.quantileTotals[i + start],
     }));
-  }
+  });
 
-  protected getTopDecileFields(groupStats: DemographicGroupStats) {
+  protected $topDeciles = computed(() => {
+    const groupStats = this.$groupStats();
     const start = 9;
-    return groupStats.quantileThresholds.slice(start).map((ceiling, i) => ({
-      index: 91 + i,
+    return groupStats?.quantileThresholds.slice(start).map((ceiling, i) => ({
+      index: `${91 + i}%`,
       ceiling,
       total: groupStats.quantileTotals[i + start],
     }));
-  }
+  });
 }

@@ -1,7 +1,8 @@
 <nav class="demographic-selection" aria-label="קבוצת דמוגרפיה">
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>מגדר</mat-label>
-        <mat-select [value]="$genderSlug()" (selectionChange)="onDemographicSelection('gender', $event)">
+        <mat-select [value]="$genderSlug()"
+            (selectionChange)="onDemographicSelection('gender', $event)">
             @for (gender of genders; track gender) {
             <mat-option [value]="gender.slug">{{gender.text}}</mat-option>
             }
@@ -10,7 +11,8 @@
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>דת</mat-label>
-        <mat-select [value]="$religionSlug()" (selectionChange)="onDemographicSelection('religion', $event)">
+        <mat-select [value]="$religionSlug()"
+            (selectionChange)="onDemographicSelection('religion', $event)">
             @for (religion of religions; track religion) {
             <mat-option [value]="religion.slug">{{religion.text}}</mat-option>
             }
@@ -19,7 +21,8 @@
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic" class="large-selection">
         <mat-label>תקופה</mat-label>
-        <mat-select [value]="$periodSlug()" (selectionChange)="onDemographicSelection('period', $event)">
+        <mat-select [value]="$periodSlug()"
+            (selectionChange)="onDemographicSelection('period', $event)">
             @for (yearPeriod of yearPeriods; track $index) {
             <mat-option [value]="yearPeriod.slug">{{yearPeriod.description}}</mat-option>
             }
@@ -27,7 +30,9 @@
     </mat-form-field>
 </nav>
 
-<main>
+@let gender = $gender();
+
+<main [style.--color]="`var(--gender-background-${gender.slug})`">
 
     <h1>
         <span>שמות ישראל: </span><wbr>
@@ -37,57 +42,77 @@
     </h1>
 
 
-    @if ($periodStats(); as periodStats) {
-    @let gender = $gender();
-    @let groupStats = periodStats.byReligionAndGender[$religion().slug][gender.slug];
+    @if ($groupStats(); as groupStats) {
 
     <mat-chip-set class="demographic-profile">
         <mat-chip>{{groupStats.nameTotal | number:'1.0-0'}} שמות</mat-chip>
         <mat-chip>{{groupStats.populationTotal | number:'1.0-0'}} אנשים</mat-chip>
-        <mat-chip>{{1000 * groupStats.nameTotal / groupStats.populationTotal |
-            number:'1.0-1'}} שמות ל-1,000 איש</mat-chip>
-        <mat-chip>{{groupStats.populationTotal / groupStats.nameTotal |
-            number:'1.0-1'}} אנשים לשם</mat-chip>
+        <mat-chip>{{
+            1000 * groupStats.nameTotal / groupStats.populationTotal | number:'1.0-1'
+            }} שמות ל-1,000 איש</mat-chip>
+        <mat-chip>{{
+            groupStats.populationTotal / groupStats.nameTotal | number:'1.0-1'
+            }} אנשים לשם</mat-chip>
     </mat-chip-set>
 
     <article class="top-names">
         <h2>{{groupStats.topNames.length}} השמות הכי פופולריים</h2>
-        @let topNameFields = [{key: 'name', label: 'שם'}, {key:'total', label: 'סהכ', isValue: true, color:
-        `var(--gender-background-${gender.slug})`}];
-        <bar-chart [data]="groupStats.topNames" [fields]="topNameFields" mode="bar"></bar-chart>
+        <app-chart mode="bar-list">
+            <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
+            <app-chart-data-axis label="שם" [data]="groupStats.topNames"
+                key="name"></app-chart-data-axis>
+            <app-chart-dataset label="אוכלוסייה" [data]="groupStats.topNames"
+                key="total"></app-chart-dataset>
+        </app-chart>
     </article>
 
     <article class="deciles">
         <h2>התפלגות השמות</h2>
 
+        @let decileData = $deciles()!;
+        @let topDecileData = $topDeciles()!;
+
         <section>
             <h3>עשירונים – תקרת אוכלוסייה</h3>
-            <bar-chart [data]="getDecileFields(groupStats)"
-                [fields]="[{key:'ceiling', label: 'תקרת אוכלוסייה', isValue: true}]"
-                [primaryAxis]="{key: 'index', label: 'עשירון'}" mode="column"></bar-chart>
+            <app-chart mode="column">
+                <app-chart-data-axis label="עשירון" [data]="decileData"
+                    key="index"></app-chart-data-axis>
+                <app-chart-dataset label="תקרת אוכלוסייה" [data]="decileData"
+                    key="ceiling"></app-chart-dataset>
+            </app-chart>
         </section>
 
         <section>
             <h3>העשירון העליון – תקרת אוכלוסייה</h3>
-            <bar-chart [data]="getTopDecileFields(groupStats)"
-                [fields]="[{key:'ceiling', label: 'תקרת אוכלוסייה', isValue: true}]"
-                [primaryAxis]="{key: 'index', label: 'מאיון (אחוזון)'}" mode="column"></bar-chart>
+            <app-chart mode="column">
+                <app-chart-data-axis label="מאיון (אחוזון)" [data]="topDecileData"
+                    key="index"></app-chart-data-axis>
+                <app-chart-dataset label="תקרת אוכלוסייה" [data]="topDecileData"
+                    key="ceiling"></app-chart-dataset>
+            </app-chart>
         </section>
 
         <section>
             <h3>עשירונים – סה"כ אוכלוסייה</h3>
-            <bar-chart [data]="getDecileFields(groupStats)"
-                [fields]='[{key:"total", label: `סה"כ אוכלוסייה`, isValue: true}]'
-                [primaryAxis]="{key: 'index', label: 'עשירון'}" mode="column"></bar-chart>
+            <app-chart mode="column">
+                <app-chart-data-axis label="עשירון" [data]="decileData"
+                    key="index"></app-chart-data-axis>
+                <app-chart-dataset label="אוכלוסייה" [data]="decileData"
+                    key="total"></app-chart-dataset>
+            </app-chart>
         </section>
 
         <section>
             <h3>העשירון העליון – סה"כ אוכלוסייה</h3>
-            <bar-chart [data]="getTopDecileFields(groupStats)"
-                [fields]='[{key:"total", label: `סה"כ אוכלוסייה`, isValue: true}]'
-                [primaryAxis]="{key: 'index', label: 'מאיון (אחוזון)'}" mode="column"></bar-chart>
+            <app-chart mode="column">
+                <app-chart-data-axis label="מאיון (אחוזון)" [data]="topDecileData"
+                    key="index"></app-chart-data-axis>
+                <app-chart-dataset label="אוכלוסייה" [data]="topDecileData"
+                    key="total"></app-chart-dataset>
+            </app-chart>
         </section>
     </article>
+
 
     } @else if ($stats.isLoading()) {
 

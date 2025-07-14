@@ -1,0 +1,32 @@
+@let dataAxes = this.dataAxes();
+@let datasets = this.$datasets();
+<table>
+    <thead class="visually-hidden">
+        <tr>
+            @for (axis of dataAxes; track axis) {
+            <th scope="col">{{ axis.label() }}</th>
+            }
+            @for (field of datasets; track field.label) {
+            <th scope="col">{{ field.label }}</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @for (_ of dataAxes[0].tickLabels(); track $index; let i = $index) {
+        <tr>
+            @for (axis of dataAxes; track axis) {
+            <th scope="row" class="chart-label">{{ axis.tickLabels()[i] }}</th>
+            }
+            <!-- <td *ngFor="let field of labelFields" class="chart-label">
+                    {{ row[field.key] }}
+                </td> -->
+            @for (field of datasets; track field.dataset) {
+            <td [style.--size]="field.dataset.get(i) / this.$maxValue()"
+                [style.--color]="field.color">
+                <span class="chart-data">{{ field.formatter(field.dataset.get(i)) }}</span>
+            </td>
+            }
+        </tr>
+        }
+    </tbody>
+</table>

@@ -52,7 +52,8 @@
 
         tr {
             grid-column: 1 / -1;
-            grid-template-columns: subgrid;
+            column-gap: 0.5ch;
+            justify-items: start;
         }
 
         td:not(.chart-label) {
@@ -69,7 +70,11 @@
 
 .chart.bar {
     tbody {
-        gap: 1rem 1ch;
+        row-gap: 1rem;
+
+        tr {
+            grid-template-columns: subgrid;
+        }
 
         td:not(.chart-label) {
             grid-column: -1;
@@ -79,6 +84,10 @@
 
 .chart.bar-list {
     tbody {
+        tr {
+            grid-template-columns: repeat(var(--label-count, 0), auto) 1fr;
+        }
+
         td:not(.chart-label) {
             grid-column: 1 / -1;
             margin-block: 1ch 1rem;
@@ -138,13 +147,13 @@
         bottom: 100%;
         transform: translateX(calc(-50%));
         opacity: 0;
-
-        @media (prefers-reduced-motion: no-preference) {
-            transition: opacity 200ms;
-        }
     }
 
     tr:hover .chart-data {
         opacity: 1;
+
+        @media (prefers-reduced-motion: no-preference) {
+            transition: opacity 200ms;
+        }
     }
 }

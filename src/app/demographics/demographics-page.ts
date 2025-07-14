@@ -1,5 +1,5 @@
 import { environment } from 'src/environments/environment';
-import { Component, computed, inject, effect } from '@angular/core';
+import { Component, computed, inject, effect, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { httpResource } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -26,6 +26,7 @@ import { Chart, ChartDataAxis, ChartDataset } from "../core/chart/chart";
   ],
   templateUrl: './demographics-page.html',
   styleUrl: './demographics-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DemographicsPage {
   protected router = inject(Router);

@@ -1,6 +1,24 @@
+@use "@angular/material" as mat;
+
 :host {
     display: block;
     container-type: inline-size;
+}
+
+mat-progress-spinner {
+    block-size: 2em !important;
+    inline-size: 2em !important;
+    margin: 1em auto;
+}
+
+h1,
+h2 {
+    text-align: center;
+}
+
+.not-found {
+    max-inline-size: 60ch;
+    margin: 0 auto;
 }
 
 .totals {
@@ -47,7 +65,7 @@
     &[fonticon="boy"] {
         --_color: var(--gender-color-men);
     }
-    
+
     &[fonticon="girl"] {
         --_color: var(--gender-color-women);
     }

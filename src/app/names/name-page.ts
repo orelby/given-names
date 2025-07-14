@@ -1,6 +1,6 @@
-import { concatWith, of, switchMap } from 'rxjs';
+import { switchMap, tap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { Component, computed, input, Signal, inject } from '@angular/core';
+import { Component, computed, input, Signal, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { NameRecords } from '@shared/models/name-records';
 import { NameRepository } from './name-repository';
 import {
@@ -11,23 +11,27 @@ import { MatIcon } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 
 @Component({
-  selector: 'app-name',
-  imports: [MatIcon, MatListModule, MatTooltip, MatCardModule, DecimalPipe],
-  templateUrl: './name.html',
-  styleUrl: './name.scss'
+  selector: 'app-name-page',
+  imports: [MatIcon, MatListModule, MatTooltip, MatCardModule, DecimalPipe, MatProgressSpinner, NgTemplateOutlet],
+  templateUrl: './name-page.html',
+  styleUrl: './name-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Name {
+export class NamePage {
   readonly name = input.required<string>();
+
+  protected readonly $isLoading = signal(true);
 
   protected readonly $records: Signal<NameRecords> = toSignal(
     toObservable(this.name).pipe(
-      switchMap(name => of([]).pipe(  // clear records, then load
-        concatWith(this.nameRepository.getByName(name))
-      )),
+      tap(() => this.$isLoading.set(true)),
+      switchMap(name => this.nameRepository.getByName(name)),
+      tap(() => this.$isLoading.set(false)),
     ),
     { initialValue: [] }
   );

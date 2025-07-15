@@ -3,7 +3,7 @@
 :host {
     display: block;
     container-type: inline-size;
-    max-inline-size: 70ch;
+    max-inline-size: 90ch;
     margin: 0 auto;
 }
 
@@ -30,7 +30,7 @@ h2 {
     margin: 2ch 0;
 }
 
-@container (min-inline-size: 42ch) {
+@container (min-inline-size: 45ch) {
     .totals > :first-child {
         grid-column: 1 / -1;
     }
@@ -38,9 +38,15 @@ h2 {
     .totals {
         grid-template-columns: 1fr 1fr;
     }
+
+    .religion-all .mat-mdc-card-content {
+        display: grid;
+        align-items: flex-start;
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
-@container (min-inline-size: 60ch) {
+@container (min-inline-size: 70ch) {
     .totals > :first-child {
         grid-column: auto;
         grid-row: 1 / span 2;
@@ -48,6 +54,10 @@ h2 {
 
     .totals {
         grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .religion-all .mat-mdc-card-content {
+        display: block;
     }
 }
 
@@ -72,13 +82,16 @@ h2 {
     display: flex;
     justify-content: start;
     align-items: stretch;
+
+    > :first-child {
+        inline-size: 0.5ch;
+        margin-block: 1ch;
+        border-radius: 3px;
+        overflow: hidden;
+    }
 }
 
 .gender-bar {
-    flex-shrink: 0;
-    width: 0.5ch;
-    margin-block: 1ch;
-    border-radius: 3px;
     background: linear-gradient(
         to bottom,
         var(--gender-color-men) 0%,
@@ -94,27 +107,42 @@ h2 {
 
 .religion-bar {
     display: flex;
-    block-size: 0.5ch;
-    max-inline-size: 60rem;
-    margin-block: 1rem;
-    border-radius: 4px;
-    overflow: hidden;
+    flex-direction: column;
+    margin-inline-end: 2ch;
 }
 
-.religion-jewish {
+.religion-chart app-chart {
+    flex: 1;
+}
+
+:host ::ng-deep {
+    th {
+        font: var(--mat-sys-body-large-font);
+    }
+
+    td {
+        --color: hsl(from var(--religion-color) h min(s, 40) 85%);
+    }
+}
+
+.religion-jewish,
+:host ::ng-deep tr:nth-child(1) td {
     --religion-color: var(--religion-color-jewish);
 }
 
-.religion-muslim {
+.religion-muslim,
+:host ::ng-deep tr:nth-child(2) td {
     --religion-color: var(--religion-color-muslim);
 }
 
-.religion-christian {
-    --religion-color: var(--religion-color-christian);
+.religion-druze,
+:host ::ng-deep tr:nth-child(3) td {
+    --religion-color: var(--religion-color-druze);
 }
 
-.religion-druze {
-    --religion-color: var(--religion-color-druze);
+.religion-christian,
+:host ::ng-deep tr:nth-child(4) td {
+    --religion-color: var(--religion-color-christian);
 }
 
 .religion-all {

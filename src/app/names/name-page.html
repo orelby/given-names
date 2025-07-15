@@ -26,16 +26,6 @@
 
     <h2>נתונים לפי קבוצת אוכלוסייה ודת</h2>
 
-    <div class="religion-bar">
-        @for (religion of religions; track religion) {
-        @if (religion.slug !== "all") {
-        <div class="religion-segment" [style.flex]="periodStats.ofReligion(religion).total"
-            [class]="'religion-' + religion.slug">
-        </div>
-        }
-        }
-    </div>
-
     <div class="totals">
         @for (religion of religions; track religion) {
         <mat-card appearance="outlined" [class]="'religion-' + religion.slug">
@@ -79,6 +69,28 @@
                         }
                     </mat-list>
                 </div>
+
+                @if (religion.slug === 'all') {
+                <div class="religion-chart content-with-bar">
+                    <div class="religion-bar" role="presentation">
+                        @for (religion of religions; track religion) {
+                        @if (religion.slug !== "all") {
+                        <div class="religion-segment"
+                            [style.flex]="periodStats.ofReligion(religion).total"
+                            [class]="'religion-' + religion.slug">
+                        </div>
+                        }
+                        }
+                    </div>
+
+                    <app-chart mode="bar-list" aria-label="">
+                        <app-chart-data-axis label="דת"
+                            [data]="religionChartAxisData"></app-chart-data-axis>
+                        <app-chart-dataset label="אוכלוסייה (אחוז)" [data]="$religionChartData()"
+                            format="percent:1.0-2"></app-chart-dataset>
+                    </app-chart>
+                </div>
+                }
             </mat-card-content>
         </mat-card>
         }

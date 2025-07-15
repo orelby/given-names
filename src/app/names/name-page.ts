@@ -1,7 +1,7 @@
 import { switchMap, tap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Component, computed, input, Signal, inject, ChangeDetectionStrategy, signal } from '@angular/core';
-import { religions, genders } from '@shared/models/demographics';
+import { religions, genders, ReligionBitmasks } from '@shared/models/demographics';
 import { MatIcon } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -14,6 +14,7 @@ import { NameCounts } from '@shared/models/stats/name-counts';
 import { NamePeriodStats } from '@shared/models/stats/name-period-stats';
 import { END_YEAR, START_YEAR } from '@shared/models/year-periods';
 import { PeriodStatsRepository } from '../demographics/period-stats-repository';
+import { Chart, ChartDataAxis, ChartDataset } from "../core/chart/chart";
 
 
 @Component({
@@ -21,6 +22,7 @@ import { PeriodStatsRepository } from '../demographics/period-stats-repository';
   imports: [
     MatIcon, MatListModule, MatTooltipModule, MatCardModule, MatProgressSpinner,
     DecimalPipe, PercentPipe,
+    Chart, ChartDataAxis, ChartDataset,
   ],
   templateUrl: './name-page.html',
   styleUrl: './name-page.scss',
@@ -71,4 +73,16 @@ export class NamePage {
   protected readonly genders = genders;
 
   protected readonly religions = religions;
+
+  private readonly religionChartAxis =
+    religions.filter(r => r.bitmask !== ReligionBitmasks.All);
+
+  protected readonly religionChartAxisData =
+    this.religionChartAxis.map(r => r.text);
+
+  protected readonly $religionChartData = computed(() => {
+    const stats = this.$stats();
+    const total = stats?.ofAll() ?? 0;
+    return this.religionChartAxis.map(r => total === 0 ? 0 : (stats!.ofReligion(r) / total));
+  });
 }

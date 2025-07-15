@@ -1,15 +1,15 @@
 // TODO: Cleanup 🍝
-// TODO: Setup data build pipeline
 // TODO: Support dynamic year ranges
 // TODO: Consider optimization *later* (e.g. quickselect variants instead of sort)
+// TODO: Consider population-weighted quantiles
 
 import { readFileSync, writeFileSync } from 'fs';
-
-import { NameCsvRepository } from './../src/app/names/name-csv-repository';
+import { NameCsvRepository } from './../src/app/names/data-access/name-csv-repository';
 import { environment } from './../src/environments/environment';
 import { getTotalByYearPeriod, NameRecord } from '@shared/models/name-records';
-import { SingleDemographic, DemographicStats, DemographicPeriodStats, religions, genders } from '@shared/models/demographics';
-import { YearPeriod, yearPeriods } from '@shared/models/year-periods';
+import { SingleDemographic, religions, genders } from '@shared/models/demographics';
+import { YearPeriod, YEAR_PERIODS } from '@shared/models/year-periods';
+import { AllPeriodStats, PeriodStats, QuantileLabel } from '@shared/models/stats/period-stats';
 
 
 const dataPath = `./public/${environment.dataPath}`;
@@ -31,7 +31,7 @@ const quantileFractions = [
   ...Array.from({ length: 10 }, (_, i) => 0.9 + (i + 1) * 0.01)
 ].map(num => Number(num.toFixed(2)));
 
-const quantileLabels: DemographicStats['quantileLabels'] = quantileFractions.map(num => {
+const quantileLabels: QuantileLabel[] = quantileFractions.map(num => {
   const percentile = Math.round(num * 100);
 
   return {
@@ -138,7 +138,7 @@ function collectEntries(
 function buildDemographicData(
   byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>,
   yearPeriod: YearPeriod
-): DemographicPeriodStats {
+): PeriodStats {
 
   const { entriesByDemographic, entriesGroupedByName } = measure(
     () => buildEntries(byName, yearPeriod),
@@ -146,7 +146,7 @@ function buildDemographicData(
     2
   );
 
-  const byReligionAndGender = {} as DemographicPeriodStats['byReligionAndGender'];
+  const byReligionAndGender = {} as PeriodStats['byReligionAndGender'];
 
   for (const religion of religions) {
     byReligionAndGender[religion.slug] = Object.fromEntries(
@@ -204,7 +204,7 @@ function buildDemographicData(
   const result = {
     yearPeriod,
     byReligionAndGender,
-  } as DemographicPeriodStats;
+  } as PeriodStats;
 
   return result;
 }
@@ -233,7 +233,7 @@ function measure<T>(cb: () => T, label: string, verbosity: number = 0): T {
 
 const nameRecordsGroupedByName = repo.getAllByName();
 
-const periodsData = yearPeriods.map(period => {
+const periodsData = YEAR_PERIODS.map(period => {
   return measure(
     () => buildDemographicData(nameRecordsGroupedByName, period),
     `Built demographic stats for ${period.start}-${period.end} in`
@@ -243,7 +243,7 @@ const periodsData = yearPeriods.map(period => {
 const stats = {
   quantileLabels,
   periods: periodsData,
-} as DemographicStats;
+} as AllPeriodStats;
 
 const savePath = `${dataPath}/demographic-stats.json`;
 

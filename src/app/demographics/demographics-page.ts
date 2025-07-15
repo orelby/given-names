@@ -1,7 +1,5 @@
-import { environment } from 'src/environments/environment';
 import { Component, computed, inject, effect, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { httpResource } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,11 +7,11 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule, MatLabel } from '@angular/material/input';
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
-import { religions, genders, DemographicGroupStats, getDemographicDescription } from '@shared/models/demographics';
+import { religions, genders, getDemographicDescription } from '@shared/models/demographics';
 import { YearPeriodPipe } from '@shared/pipes/year-period-pipe';
-import { yearPeriods, fullDataPeriod } from '@shared/models/year-periods';
-import { DemographicStats } from '@shared/models/demographics';
+import { YEAR_PERIODS, FULL_DATA_PERIOD } from '@shared/models/year-periods';
 import { Chart, ChartDataAxis, ChartDataset } from "../core/chart/chart";
+import { PeriodStatsRepository } from './period-stats-repository';
 
 @Component({
   selector: 'app-demographics-page',
@@ -45,7 +43,7 @@ export class DemographicsPage {
 
   protected readonly $period = computed(() => {
     const slug = this.$queryParams()?.get('period');
-    return yearPeriods.find(p => p.slug === slug) ?? fullDataPeriod
+    return YEAR_PERIODS.find(p => p.slug === slug) ?? FULL_DATA_PERIOD
   });
 
   protected $genderSlug = computed(() => this.$gender().slug);
@@ -56,20 +54,20 @@ export class DemographicsPage {
     getDemographicDescription(this.$religion(), this.$gender())
   );
 
-  protected readonly $stats = httpResource<DemographicStats>(
-    () => `${environment.dataPath}/demographic-stats.json`
-  );
+  protected readonly $periodsStats = inject(PeriodStatsRepository).getAll();
 
   protected readonly $periodStats = computed(() => {
     const period = this.$period();
-    return this.$stats.hasValue()
-      ? this.$stats.value().periods.find(p =>
+    const periodsStats = this.$periodsStats;
+
+    return periodsStats.hasValue()
+      ? periodsStats.value().periods.find(p =>
         p.yearPeriod.start === period.start && p.yearPeriod.end === period.end
       )
       : undefined;
   });
 
-  protected readonly yearPeriods = yearPeriods;
+  protected readonly yearPeriods = YEAR_PERIODS;
   protected readonly religions = religions;
   protected readonly genders = genders;
 

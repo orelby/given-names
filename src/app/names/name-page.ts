@@ -1,23 +1,27 @@
 import { switchMap, tap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Component, computed, input, Signal, inject, ChangeDetectionStrategy, signal } from '@angular/core';
-import { NameRecords } from '@shared/models/name-records';
-import { NameRepository } from './name-repository';
-import {
-  GenderBitmasks, ReligionBitmasks, Religion,
-  religions, genders
-} from '@shared/models/demographics';
+import { religions, genders } from '@shared/models/demographics';
 import { MatIcon } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { MatTooltip } from '@angular/material/tooltip';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
-import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { DecimalPipe, PercentPipe } from '@angular/common';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { NameRepository } from './data-access/name-repository';
+import { NameRecords } from '@shared/models/name-records';
+import { NameCounts } from '@shared/models/stats/name-counts';
+import { NamePeriodStats } from '@shared/models/stats/name-period-stats';
+import { END_YEAR, START_YEAR } from '@shared/models/year-periods';
+import { PeriodStatsRepository } from '../demographics/period-stats-repository';
 
 
 @Component({
   selector: 'app-name-page',
-  imports: [MatIcon, MatListModule, MatTooltip, MatCardModule, DecimalPipe, MatProgressSpinner, NgTemplateOutlet],
+  imports: [
+    MatIcon, MatListModule, MatTooltipModule, MatCardModule, MatProgressSpinner,
+    DecimalPipe, PercentPipe,
+  ],
   templateUrl: './name-page.html',
   styleUrl: './name-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,51 +29,46 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 export class NamePage {
   readonly name = input.required<string>();
 
-  protected readonly $isLoading = signal(true);
+  private readonly nameRepository = inject(NameRepository);
+
+  private readonly $periodsStats = inject(PeriodStatsRepository).getAll();
+
+  private readonly $isLoadingRecords = signal(true);
+
+  protected readonly $isLoading = computed(() =>
+    this.$isLoadingRecords() || this.$periodsStats.isLoading()
+  );
 
   protected readonly $records: Signal<NameRecords> = toSignal(
     toObservable(this.name).pipe(
-      tap(() => this.$isLoading.set(true)),
+      tap(() => this.$isLoadingRecords.set(true)),
       switchMap(name => this.nameRepository.getByName(name)),
-      tap(() => this.$isLoading.set(false)),
+      tap(() => this.$isLoadingRecords.set(false)),
     ),
     { initialValue: [] }
   );
 
-  protected readonly $totalByGenderByReligion = computed(() => {
-    const religions = Object.values(ReligionBitmasks);
-    const genders = Object.values(GenderBitmasks);
+  protected readonly $stats = computed(() => {
+    if (this.$isLoading()) return undefined;
 
-    const totals = Object.fromEntries(religions.map(religion =>
-      [religion, Object.fromEntries(genders.map(gender => [gender, 0]))]
-    ));
+    return new NameCounts().withRecords(this.$records());
+  });
 
-    this.$records().forEach(record => {
-      const religion = record.demographic & ReligionBitmasks.All;
-      const gender = record.demographic & GenderBitmasks.All;
-      totals[religion][gender] += record.total;
-      totals[religion][GenderBitmasks.All] += record.total;
-      totals[ReligionBitmasks.All][gender] += record.total;
-      totals[ReligionBitmasks.All][GenderBitmasks.All] += record.total;
-    });
+  protected readonly $periodStats = computed(() => {
+    if (this.$isLoading()) return undefined;
 
-    return totals;
+    const periodsStats = this.$periodsStats.value()!;
+
+    return new NamePeriodStats(
+      this.$stats()!,
+      periodsStats.periods.find(p =>
+        p.yearPeriod.start === START_YEAR && p.yearPeriod.end === END_YEAR
+      )!,
+      periodsStats.quantileLabels,
+    );
   });
 
   protected readonly genders = genders;
 
   protected readonly religions = religions;
-
-  protected readonly nameRepository = inject(NameRepository);
-
-  getGenderRatio(religion: Religion): number {
-    const r = this.$totalByGenderByReligion()[religion.bitmask];
-    const female = r[GenderBitmasks.Women];
-    const total = r[GenderBitmasks.All];
-    return female / total;
-  }
-
-  getReligionTotal(religion: Religion): number {
-    return this.$totalByGenderByReligion()[religion.bitmask][GenderBitmasks.All];
-  }
 }

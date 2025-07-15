@@ -14,7 +14,7 @@ import { NameCsvRepository } from "./name-csv-repository";
 export class NameRepository {
     private readonly init$: Observable<unknown>;
 
-    private readonly repo: NameCsvRepository = new NameCsvRepository();
+    private readonly repo = new NameCsvRepository();
 
     constructor() {
         const shouldChunkLoad = isPlatformBrowser(inject(PLATFORM_ID));

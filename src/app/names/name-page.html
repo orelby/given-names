@@ -1,9 +1,11 @@
 @let isLoading = $isLoading();
-@let records = $records();
+@let stats = $stats();
+@let periodStats = $periodStats();
+
 <main>
     @if (isLoading) {
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    } @else if (records.length === 0) {
+    } @else if (stats === undefined || periodStats === undefined) {
     <h1>השם שחיפשת לא נמצא</h1>
 
     <mat-card appearance="outlined" class="not-found">
@@ -21,8 +23,6 @@
 
     </mat-card>
     } @else {
-    @let totalByGenderByReligion = $totalByGenderByReligion();
-
     <h1>שם: {{name()}}</h1>
 
     <h2>נתונים לפי קבוצת אוכלוסייה ודת</h2>
@@ -30,7 +30,7 @@
     <div class="religion-bar">
         @for (religion of religions; track religion) {
         @if (religion.slug !== "all") {
-        <div class="religion-segment" [style.flex]="getReligionTotal(religion)"
+        <div class="religion-segment" [style.flex]="periodStats.ofReligion(religion).total"
             [class]="'religion-' + religion.slug">
         </div>
         }
@@ -43,25 +43,39 @@
             <mat-card-header>{{religion.icon}} {{religion.text}}</mat-card-header>
             <mat-card-content>
                 <div class="content-with-bar">
-                    @let genderRatio = getGenderRatio(religion);
-                    @if (totalByGenderByReligion[religion.bitmask][genders[0].bitmask] === 0) {
+                    @let genderRatio = stats.getGenderRatioOfReligion(religion);
+                    @if (genderRatio === undefined) {
                     <div class="gender-bar gender-bar--empty"></div>
                     } @else {
                     <div class="gender-bar" [style.--ratio]="genderRatio"></div>
                     }
                     <mat-list>
                         @for (gender of genders; track gender) {
+                        @let groupStats = periodStats.ofDemographic(religion, gender);
+
                         <mat-list-item>
                             <mat-icon [fontIcon]="gender.icon" matListItemIcon
-                                [matTooltip]="gender.text" matTooltipPosition="below"></mat-icon>
+                                [matTooltip]="gender.text" matTooltipPosition="after"></mat-icon>
 
-                            @if (totalByGenderByReligion[religion.bitmask][gender.bitmask] === 0) {
+                            @if (groupStats.total === 0) {
                             <span matListItemTitle matTooltip="פחות מ־5"
-                                matTooltipPosition="below">—</span>
+                                matTooltipPosition="before">—</span>
                             } @else {
-                            <span matListItemTitle>{{
-                             totalByGenderByReligion[religion.bitmask][gender.bitmask] | number:'1.0-0'
+                            <span matListItemTitle
+                                [matTooltip]="groupStats.fraction | percent:'1.0-3'"
+                                matTooltipPosition="before">{{
+                             groupStats.total| number:'1.0-0'
                              }}</span>
+                            }
+
+                            @if (groupStats.total !== 0) {
+                            <span matListItemLine>
+                                {{(groupStats.percentile
+                                ? `אחוזון ${groupStats.percentile}` 
+                                : `עשירון ${groupStats.decile}`)}}
+                            </span>
+                            } @else {
+                            <span matListItemLine></span>
                             }
                         </mat-list-item>
                         }

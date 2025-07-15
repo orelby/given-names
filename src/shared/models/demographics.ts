@@ -119,33 +119,3 @@ export function getDemographicDescription(religion: Religion, gender: Gender) {
 
     return parts.join(' ');
 }
-
-export interface DemographicGroupStats {
-    nameTotal: number;
-    populationTotal: number;
-    quantileThresholds: number[];
-    quantileTotals: number[];
-    topNames: {
-        name: string;
-        total: number
-    }[];
-}
-
-export interface DemographicPeriodStats {
-    yearPeriod: YearPeriod,
-    byReligionAndGender: Record<
-        Religion['slug'],
-        Record<
-            Gender['slug'],
-            DemographicGroupStats
-        >
-    >;
-}
-
-export interface DemographicStats {
-    quantileLabels: {
-        type: 'decile' | 'percentile',
-        value: number
-    }[];
-    periods: readonly DemographicPeriodStats[];
-}

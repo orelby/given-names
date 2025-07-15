@@ -9,14 +9,14 @@ export interface YearPeriod {
     description: string;
 }
 
-export const fullDataPeriod: YearPeriod = {
+export const FULL_DATA_PERIOD: YearPeriod = {
     start: START_YEAR,
     end: END_YEAR,
     slug: 'all',
     description: 'כל הנתונים',
 };
 
-export const generations: readonly YearPeriod[] = [
+export const GENERATIONS: readonly YearPeriod[] = [
     {
         start: 2013,
         end: Math.min(END_YEAR, 2024),
@@ -49,7 +49,7 @@ export const generations: readonly YearPeriod[] = [
     }
 ];
 
-export const recentYearPeriods: readonly YearPeriod[] = [
+export const RECENT_YEAR_PERIODS: readonly YearPeriod[] = [
     {
         start: END_YEAR,
         end: END_YEAR,
@@ -64,8 +64,8 @@ export const recentYearPeriods: readonly YearPeriod[] = [
     },
 ]
 
-export const yearPeriods: readonly YearPeriod[] = [
-    fullDataPeriod,
-    ...recentYearPeriods,
-    ...generations
+export const YEAR_PERIODS: readonly YearPeriod[] = [
+    FULL_DATA_PERIOD,
+    ...RECENT_YEAR_PERIODS,
+    ...GENERATIONS
 ];

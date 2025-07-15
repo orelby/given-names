@@ -1,9 +1,7 @@
-@let stats = $stats()!;
-
 <main>
     @if ($isLoading()) {
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    } @else if (stats.ofAll() === 0) {
+    } @else if ($stats()?.ofAll() === 0) {
     <h1>השם שחיפשת לא נמצא</h1>
 
     <mat-card appearance="outlined" class="not-found">
@@ -21,6 +19,7 @@
 
     </mat-card>
     } @else {
+    @let stats = $stats()!;
     @let periodStats = $periodStats()!;
 
     <h1>שם: {{name()}}</h1>
@@ -58,24 +57,23 @@
                                 [matTooltip]="gender.text" matTooltipPosition="after"></mat-icon>
 
                             @if (groupStats.total === 0) {
-                            <span matListItemTitle matTooltip="פחות מ־5"
-                                matTooltipPosition="before">—</span>
+                            <span matListItemTitle role="presentation">–</span>
                             } @else {
-                            <span matListItemTitle
-                                [matTooltip]="groupStats.fraction | percent:'1.0-3'"
-                                matTooltipPosition="before">{{
+                            <span matListItemTitle [matTooltip]="(groupStats.percentile
+                                ? `אחוזון ${groupStats.percentile}` 
+                                : `עשירון ${groupStats.decile}`)" matTooltipPosition="before">{{
                              groupStats.total| number:'1.0-0'
                              }}</span>
                             }
 
-                            @if (groupStats.total !== 0) {
-                            <span matListItemLine>
-                                {{(groupStats.percentile
-                                ? `אחוזון ${groupStats.percentile}` 
-                                : `עשירון ${groupStats.decile}`)}}
-                            </span>
+                            <!-- TODO: only show if period == all -->
+
+                            @if (groupStats.total === 0) {
+                            <span matListItemLine>פחות מ־5</span>
                             } @else {
-                            <span matListItemLine></span>
+                            <span matListItemLine>
+                                {{groupStats.fraction | percent:'1.3-3'}}
+                            </span>
                             }
                         </mat-list-item>
                         }

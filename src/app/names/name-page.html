@@ -1,11 +1,9 @@
-@let isLoading = $isLoading();
-@let stats = $stats();
-@let periodStats = $periodStats();
+@let stats = $stats()!;
 
 <main>
-    @if (isLoading) {
+    @if ($isLoading()) {
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    } @else if (stats === undefined || periodStats === undefined) {
+    } @else if (stats.ofAll() === 0) {
     <h1>השם שחיפשת לא נמצא</h1>
 
     <mat-card appearance="outlined" class="not-found">
@@ -23,6 +21,8 @@
 
     </mat-card>
     } @else {
+    @let periodStats = $periodStats()!;
+
     <h1>שם: {{name()}}</h1>
 
     <h2>נתונים לפי קבוצת אוכלוסייה ודת</h2>

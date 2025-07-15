@@ -12,16 +12,17 @@ import { NameRepository } from './data-access/name-repository';
 import { NameRecords } from '@shared/models/name-records';
 import { NameCounts } from '@shared/models/stats/name-counts';
 import { NamePeriodStats } from '@shared/models/stats/name-period-stats';
-import { END_YEAR, START_YEAR } from '@shared/models/year-periods';
+import { FULL_DATA_PERIOD, GENERATIONS } from '@shared/models/year-periods';
 import { PeriodStatsRepository } from '../demographics/period-stats-repository';
 import { Chart, ChartDataAxis, ChartDataset } from "../core/chart/chart";
+import { YearPeriodPipe } from '@shared/pipes/year-period-pipe';
 
 
 @Component({
   selector: 'app-name-page',
   imports: [
     MatIcon, MatListModule, MatTooltipModule, MatCardModule, MatProgressSpinner,
-    DecimalPipe, PercentPipe,
+    DecimalPipe, PercentPipe, YearPeriodPipe,
     Chart, ChartDataAxis, ChartDataset,
   ],
   templateUrl: './name-page.html',
@@ -53,18 +54,24 @@ export class NamePage {
   protected readonly $stats = computed(() => {
     if (this.$isLoading()) return undefined;
 
-    return new NameCounts().withRecords(this.$records());
+    return new NameCounts().withRecords(this.$records(), this.$period());
   });
+
+  protected readonly $period = signal(
+    // GENERATIONS[0]
+    FULL_DATA_PERIOD
+  );
 
   protected readonly $periodStats = computed(() => {
     if (this.$isLoading()) return undefined;
 
     const periodsStats = this.$periodsStats.value()!;
+    const period = this.$period();
 
     return new NamePeriodStats(
       this.$stats()!,
       periodsStats.periods.find(p =>
-        p.yearPeriod.start === START_YEAR && p.yearPeriod.end === END_YEAR
+        p.yearPeriod.start === period.start && p.yearPeriod.end === period.end
       )!,
       periodsStats.quantileLabels,
     );

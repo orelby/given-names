@@ -1,7 +1,7 @@
 <main>
     @if ($isLoading()) {
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    } @else if ($stats()?.ofAll() === 0) {
+    } @else if ($records().length === 0) {
     <h1>השם שחיפשת לא נמצא</h1>
 
     <mat-card appearance="outlined" class="not-found">
@@ -19,12 +19,16 @@
 
     </mat-card>
     } @else {
+    @let period = $period();
     @let stats = $stats()!;
     @let periodStats = $periodStats()!;
 
     <h1>שם: {{name()}}</h1>
 
-    <h2>נתונים לפי קבוצת אוכלוסייה ודת</h2>
+    <h2>
+        <span dir="rtl">{{$period().description}}</span><wbr>
+        <span dir="rtl"> ({{$period() | yearPeriod }})</span>
+    </h2>
 
     <div class="totals">
         @for (religion of religions; track religion) {
@@ -56,9 +60,7 @@
                              }}</span>
                             }
 
-                            <!-- TODO: only show if period == all -->
-
-                            @if (groupStats.total === 0) {
+                            @if (groupStats.total === 0 && period.slug === 'all') {
                             <span matListItemLine>פחות מ־5</span>
                             } @else {
                             <span matListItemLine>

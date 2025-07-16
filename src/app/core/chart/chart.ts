@@ -124,7 +124,7 @@ export class Chart {
 
     readonly dataAxes = contentChildren<ChartDataAxis>(ChartDataAxis);
 
-    readonly valueAxis = input<readonly number[] | 'log-scale' | 'linear-scale' | 'auto'>('auto');
+    readonly valueAxis = input<readonly number[] | 'log' | 'linear' | 'auto'>('auto');
 
     protected readonly $curMode = computed(() => {
         return this.$breakpointUp().minWidth < this.breakpoints.md
@@ -147,12 +147,17 @@ export class Chart {
         )
     ));
 
-    protected readonly $maxValue = computed(() => this.$datasets().reduce(
-        (accMax, dataset) => Math.max(accMax, ...dataset.dataset), 0
-    ) || 1)
+    protected readonly $maxValue = computed(() => {
+        const maxValue = this.$datasets().reduce(
+            (accMax, dataset) => Math.max(accMax, ...dataset.dataset), 0
+        ) || 1;
+
+        return this.valueAxis() === 'log' ? Math.log10(1 + maxValue) : maxValue;
+    })
 
     private readonly $breakpointUp = inject(BreakpointService).$breakpointUp;
 
     private readonly breakpoints = inject(BREAKPOINTS);
 
+    protected readonly Math = Math;
 }

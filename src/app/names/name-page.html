@@ -110,7 +110,7 @@
     <section class="time-chart">
         <h2>התפתחות במהלך הזמן</h2>
 
-        <div class="time-chart-controls">
+        <div class="time-chart-controls" role="group" aria-label="אפשרויות">
             <mat-button-toggle-group aria-label="קבוצות להשוואה" [(value)]="$timeChartGroupBy"
                 hideSingleSelectionIndicator>
                 <mat-button-toggle value="all">כולם</mat-button-toggle>
@@ -120,11 +120,9 @@
 
             <mat-button-toggle-group aria-label="נרמול אוכלוסייה" [(value)]="$timeChartNorm"
                 hideSingleSelectionIndicator>
-                <mat-button-toggle value="relative" matTooltip="אחוז מהקבוצה בכל תקופה">
-                    אחוז
+                <mat-button-toggle value="relative" matTooltip="אחוז מהקבוצה בכל תקופה">אחוז
                 </mat-button-toggle>
-                <mat-button-toggle value="absolute" matTooltip='סה"כ אוכלוסייה'>
-                    סה"כ
+                <mat-button-toggle value="absolute" matTooltip='סה"כ אוכלוסייה'>מספר
                 </mat-button-toggle>
             </mat-button-toggle-group>
         </div>

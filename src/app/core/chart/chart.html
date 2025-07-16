@@ -1,5 +1,7 @@
 @let dataAxes = this.dataAxes();
 @let datasets = this.$datasets();
+@let isLogScale = valueAxis() === 'log';
+
 <table>
     <thead class="visually-hidden">
         <tr>
@@ -17,11 +19,8 @@
             @for (axis of dataAxes; track axis) {
             <th scope="row" class="chart-label">{{ axis.tickLabels()[i] }}</th>
             }
-            <!-- <td *ngFor="let field of labelFields" class="chart-label">
-                    {{ row[field.key] }}
-                </td> -->
             @for (field of datasets; track field.dataset) {
-            <td [style.--size]="field.dataset.get(i) / this.$maxValue()"
+            <td [style.--size]="(isLogScale ? Math.log10(1 + field.dataset.get(i)) : field.dataset.get(i)) / this.$maxValue()"
                 [style.--color]="field.color">
                 <span class="chart-data">{{ field.formatter(field.dataset.get(i)) }}</span>
             </td>

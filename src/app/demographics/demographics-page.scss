@@ -80,3 +80,10 @@ h1 span {
     max-width: max-content;
     margin: 0 auto;
 }
+
+.quantile-controls, .quantile-controls > div {
+    display: flex;
+    gap: 2ch;
+    flex-wrap: wrap;
+    justify-content: center;
+}

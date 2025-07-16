@@ -66,53 +66,61 @@
         </app-chart>
     </article>
 
-    <article class="deciles">
+    <article class="quantiles">
         <h2>התפלגות השמות</h2>
 
-        @let decileData = $deciles()!;
-        @let topDecileData = $topDeciles()!;
+        <div class="quantile-controls" role="group" aria-label="אפשרויות">
+            <mat-button-toggle-group aria-label="הערך הרצוי" matTooltip="הערך הרצוי"
+                matTooltipShowDelay="500" [(value)]="$selectedQuantileDataKey"
+                hideSingleSelectionIndicator>
+                <mat-button-toggle value="threshold">תקרת אוכלוסייה</mat-button-toggle>
+                <mat-button-toggle value="total">סה"כ אוכלוסייה</mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <div>
+                <mat-button-toggle-group aria-label="אופן תצוגת הערכים"
+                    matTooltip="אופן תצוגת הערכים" matTooltipShowDelay="500"
+                    [(value)]="$selectedQuantileDataFormat" hideSingleSelectionIndicator>
+                    <mat-button-toggle value="absolute">מספר</mat-button-toggle>
+                    <mat-button-toggle value="relative">אחוזים</mat-button-toggle>
+                </mat-button-toggle-group>
+
+                <mat-button-toggle-group aria-label="סקאלת הגרף" matTooltip="סקאלת הגרף"
+                    matTooltipShowDelay="500" [(value)]="$selectedQuantileScale"
+                    hideSingleSelectionIndicator>
+                    <mat-button-toggle value="linear">לינארי</mat-button-toggle>
+                    <mat-button-toggle value="log">לוגריתמי</mat-button-toggle>
+                </mat-button-toggle-group>
+            </div>
+        </div>
+
+        @if ($quantileStats(); as quantileStats) {
+        @let key = $selectedQuantileDataKey();
+        @let label = key === 'total' ? 'סה"כ אוכלוסייה' : 'תקרת אוכלוסייה';
 
         <section>
-            <h3>עשירונים – תקרת אוכלוסייה</h3>
-            <app-chart mode="column">
-                <app-chart-data-axis label="עשירון" [data]="decileData"
+            <h3>עשירונים</h3>
+            <app-chart mode="column" [valueAxis]="$selectedQuantileScale()">
+                <app-chart-data-axis label="עשירון" [data]="quantileStats.deciles"
                     key="index"></app-chart-data-axis>
-                <app-chart-dataset label="תקרת אוכלוסייה" [data]="decileData"
-                    key="ceiling"></app-chart-dataset>
+                <app-chart-dataset [label]="label" [data]="quantileStats.deciles" [key]="key"
+                    [format]="$quantileDataFormat()"></app-chart-dataset>
             </app-chart>
         </section>
 
         <section>
-            <h3>העשירון העליון – תקרת אוכלוסייה</h3>
-            <app-chart mode="column">
-                <app-chart-data-axis label="מאיון (אחוזון)" [data]="topDecileData"
+            <h3>העשירון העליון – אחוזונים</h3>
+            <app-chart mode="column" [valueAxis]="$selectedQuantileScale()">
+                <app-chart-data-axis label="מאיון (אחוזון)" [data]="quantileStats.topPercentiles"
                     key="index"></app-chart-data-axis>
-                <app-chart-dataset label="תקרת אוכלוסייה" [data]="topDecileData"
-                    key="ceiling"></app-chart-dataset>
-            </app-chart>
-        </section>
+                <app-chart-dataset [label]="label" [data]="quantileStats.topPercentiles" [key]="key"
+                    [format]="$quantileDataFormat()"></app-chart-dataset>
 
-        <section>
-            <h3>עשירונים – סה"כ אוכלוסייה</h3>
-            <app-chart mode="column">
-                <app-chart-data-axis label="עשירון" [data]="decileData"
-                    key="index"></app-chart-data-axis>
-                <app-chart-dataset label="אוכלוסייה" [data]="decileData"
-                    key="total"></app-chart-dataset>
             </app-chart>
         </section>
+        }
 
-        <section>
-            <h3>העשירון העליון – סה"כ אוכלוסייה</h3>
-            <app-chart mode="column">
-                <app-chart-data-axis label="מאיון (אחוזון)" [data]="topDecileData"
-                    key="index"></app-chart-data-axis>
-                <app-chart-dataset label="אוכלוסייה" [data]="topDecileData"
-                    key="total"></app-chart-dataset>
-            </app-chart>
-        </section>
     </article>
-
 
     } @else if ($periodsStats.isLoading()) {
 

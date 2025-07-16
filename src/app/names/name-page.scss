@@ -3,7 +3,6 @@
 :host {
     display: block;
     container-type: inline-size;
-    max-inline-size: 90ch;
     margin: 0 auto;
 }
 
@@ -13,9 +12,9 @@ mat-progress-spinner {
     margin: 1em auto;
 }
 
-h1,
-h2 {
-    text-align: center;
+section {
+    max-inline-size: 90ch;
+    margin: 0 auto 2em;
 }
 
 .not-found {
@@ -120,28 +119,28 @@ h2 {
         font: var(--mat-sys-body-large-font);
     }
 
-    td {
+    .religion-chart td {
         --color: hsl(from var(--religion-color) h min(s, 40) 85%);
     }
 }
 
 .religion-jewish,
-:host ::ng-deep tr:nth-child(1) td {
+:host ::ng-deep .religion-chart tr:nth-child(1) {
     --religion-color: var(--religion-color-jewish);
 }
 
 .religion-muslim,
-:host ::ng-deep tr:nth-child(2) td {
+:host ::ng-deep .religion-chart tr:nth-child(2) {
     --religion-color: var(--religion-color-muslim);
 }
 
 .religion-druze,
-:host ::ng-deep tr:nth-child(3) td {
+:host ::ng-deep .religion-chart tr:nth-child(3) {
     --religion-color: var(--religion-color-druze);
 }
 
 .religion-christian,
-:host ::ng-deep tr:nth-child(4) td {
+:host ::ng-deep .religion-chart tr:nth-child(4) {
     --religion-color: var(--religion-color-christian);
 }
 
@@ -160,4 +159,33 @@ mat-card {
 
 mat-card:hover {
     background: hsl(from var(--religion-color) h calc(s * 0.8) 90%);
+}
+
+.time-chart {
+    max-inline-size: 110ch;
+
+    .mdc-card {
+        &:has(.chart.column) {
+            max-inline-size: max-content;
+        }
+        margin: 0 auto;
+    }
+
+    .chart.column {
+        width: max-content;
+    }
+}
+
+.time-chart-controls {
+    display: flex;
+    gap: 1ch;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-block-end: 1em;
+}
+
+h3 {
+    padding: 0;
+    margin: 0;
+    font: var(--mat-sys-body-large-font);
 }

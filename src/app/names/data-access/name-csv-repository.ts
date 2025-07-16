@@ -1,11 +1,11 @@
 import {
-    Demographic, SingleDemographic,
+    Demographic, ConcreteDemographicGroup,
     parseGender, parseReligion,
 } from "@shared/models/demographics";
 import { NameRecord, NameRecords } from "@shared/models/name-records";
 
 export class NameCsvRepository {
-    private byDemographic = new Map<SingleDemographic, NameRecord[]>();
+    private byDemographic = new Map<ConcreteDemographicGroup, NameRecord[]>();
 
     private byName = new Map<string, NameRecord[]>();
 
@@ -65,7 +65,7 @@ export class NameCsvRepository {
             .filter(r => demographic & r.demographic);
     }
 
-    getByDemographic(demographic: SingleDemographic): NameRecords {
+    getByDemographic(demographic: ConcreteDemographicGroup): NameRecords {
         return this.byDemographic.get(demographic) ?? [];
     }
 

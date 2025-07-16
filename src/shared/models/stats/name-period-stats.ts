@@ -1,10 +1,10 @@
 import { ReadonlyNameCounts } from "./name-counts";
-import { Gender, GenderBitmasks, genders, Religion, ReligionBitmasks, religions } from '../demographics';
+import { Demographic, DemographicGroup, Gender, GenderBitmasks, genders, Religion, ReligionBitmasks, religions } from '../demographics';
 import { PeriodStats, QuantileLabel } from "./period-stats";
 import { DemographicGroupStats } from "./demographic-group-stats";
 
 export class NamePeriodStats {
-    private stats: Record<string, NameDemographicGroupStats> = {};
+    private stats: Record<DemographicGroup, NameDemographicGroupStats> = {};
 
     constructor(
         nameCounts: ReadonlyNameCounts,
@@ -15,7 +15,7 @@ export class NamePeriodStats {
             for (const gender of genders) {
                 this.stats[religion.bitmask | gender.bitmask] =
                     new NameDemographicGroupStats(
-                        nameCounts.ofDemographic(religion, gender),
+                        nameCounts.ofReligionAndGender(religion, gender),
                         periodStats.byReligionAndGender[religion.slug][gender.slug],
                         quantileLabels,
                     );
@@ -23,7 +23,15 @@ export class NamePeriodStats {
         }
     }
 
-    ofDemographic(religion: Religion, gender: Gender) {
+    ofDemographicGroup(group: Demographic) {
+        if (!(group in this.stats)) {
+            throw Error('Must be called with a demographic group.');
+        }
+
+        return this.stats[group];
+    }
+
+    ofReligionAndGender(religion: Religion, gender: Gender) {
         return this.stats[religion.bitmask | gender.bitmask];
     }
 

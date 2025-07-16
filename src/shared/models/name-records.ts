@@ -1,10 +1,10 @@
-import { SingleDemographic } from './demographics';
+import { ConcreteDemographicGroup } from './demographics';
 import { YearPeriod, START_YEAR } from './year-periods';
 
 export interface NameCountsRecord {
     readonly total: number;
     readonly yearTotals: readonly number[];
-    readonly demographic: SingleDemographic;
+    readonly demographic: ConcreteDemographicGroup;
 }
 
 export interface NameRecord extends NameCountsRecord {

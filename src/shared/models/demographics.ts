@@ -1,14 +1,19 @@
 import { YearPeriod } from "./year-periods";
 
 /**
- * Bitmask of at least one specific gender and one specific religion.
+ * Bitmask of at least one gender and one religion.
  */
 export type Demographic = number;
 
 /**
- * Bitmask of a single specific gender with a single specific religion.
+ * Bitmask of a single specific gender with a single specific religion (not ALL).
  */
-export type SingleDemographic = number;
+export type ConcreteDemographicGroup = number;
+
+/**
+ * Bitmask of exactly one gender with exactly one religion.
+ */
+export type DemographicGroup = number;
 
 export const GenderBitmasks = {
     All: 0b11,

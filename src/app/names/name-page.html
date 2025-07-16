@@ -23,79 +23,124 @@
     @let stats = $stats()!;
     @let periodStats = $periodStats()!;
 
-    <h1>שם: {{name()}}</h1>
+    <h1>
+        <span>שם: {{name()}}</span><br />
+        <span style="font-size: smaller;">
+            <span dir="rtl">{{$period().description}}</span><wbr>
+            <span dir="rtl"> ({{$period() | yearPeriod }})</span>
+        </span>
+    </h1>
 
-    <h2>
-        <span dir="rtl">{{$period().description}}</span><wbr>
-        <span dir="rtl"> ({{$period() | yearPeriod }})</span>
-    </h2>
+    <section>
+        <h2 class="visually-hidden">סיכום התקופה</h2>
 
-    <div class="totals">
-        @for (religion of religions; track religion) {
-        <mat-card appearance="outlined" [class]="'religion-' + religion.slug">
-            <mat-card-header>{{religion.icon}} {{religion.text}}</mat-card-header>
-            <mat-card-content>
-                <div class="content-with-bar">
-                    @let genderRatio = stats.getGenderRatioOfReligion(religion);
-                    @if (genderRatio === undefined) {
-                    <div class="gender-bar gender-bar--empty"></div>
-                    } @else {
-                    <div class="gender-bar" [style.--ratio]="genderRatio"></div>
-                    }
-                    <mat-list>
-                        @for (gender of genders; track gender) {
-                        @let groupStats = periodStats.ofDemographic(religion, gender);
+        <div class="totals">
+            @for (religion of religions; track religion) {
+            <mat-card appearance="outlined" [class]="'religion-' + religion.slug" role="group">
+                <mat-card-header>
+                    <h3>{{religion.icon}} {{religion.text}}</h3>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="content-with-bar">
+                        @let genderRatio = stats.getGenderRatioOfReligion(religion);
+                        @if (genderRatio === undefined) {
+                        <div class="gender-bar gender-bar--empty"></div>
+                        } @else {
+                        <div class="gender-bar" [style.--ratio]="genderRatio"></div>
+                        }
+                        <mat-list role="list">
+                            @for (gender of genders; track gender) {
+                            @let groupStats = periodStats.ofReligionAndGender(religion, gender);
 
-                        <mat-list-item>
-                            <mat-icon [fontIcon]="gender.icon" matListItemIcon
-                                [matTooltip]="gender.text" matTooltipPosition="after"></mat-icon>
+                            <mat-list-item role="listitem" [ariaLabel]="gender.text">
+                                <mat-icon [fontIcon]="gender.icon" matListItemIcon
+                                    [matTooltip]="gender.text" matTooltipPosition="after"
+                                    aria-hidden="true"></mat-icon>
 
-                            @if (groupStats.total === 0) {
-                            <span matListItemTitle role="presentation">–</span>
-                            } @else {
-                            <span matListItemTitle [matTooltip]="(groupStats.percentile
+                                @if (groupStats.total === 0) {
+                                <span matListItemTitle role="presentation">–</span>
+                                } @else {
+                                <span matListItemTitle [matTooltip]="(groupStats.percentile
                                 ? `אחוזון ${groupStats.percentile}` 
                                 : `עשירון ${groupStats.decile}`)" matTooltipPosition="before">{{
                              groupStats.total| number:'1.0-0'
                              }}</span>
-                            }
+                                }
 
-                            @if (groupStats.total === 0 && period.slug === 'all') {
-                            <span matListItemLine>פחות מ־5</span>
-                            } @else {
-                            <span matListItemLine>
-                                {{groupStats.fraction | percent:'1.3-3'}}
-                            </span>
+                                @if (groupStats.total === 0 && period.slug === 'all') {
+                                <span matListItemLine>פחות מ־5</span>
+                                } @else {
+                                <span matListItemLine>
+                                    {{groupStats.fraction | percent:'1.3-3'}}
+                                </span>
+                                }
+                            </mat-list-item>
                             }
-                        </mat-list-item>
-                        }
-                    </mat-list>
-                </div>
-
-                @if (religion.slug === 'all') {
-                <div class="religion-chart content-with-bar">
-                    <div class="religion-bar" role="presentation">
-                        @for (religion of religions; track religion) {
-                        @if (religion.slug !== "all") {
-                        <div class="religion-segment"
-                            [style.flex]="periodStats.ofReligion(religion).total"
-                            [class]="'religion-' + religion.slug">
-                        </div>
-                        }
-                        }
+                        </mat-list>
                     </div>
 
-                    <app-chart mode="bar-list" aria-label="">
-                        <app-chart-data-axis label="דת"
-                            [data]="religionChartAxisData"></app-chart-data-axis>
-                        <app-chart-dataset label="אוכלוסייה (אחוז)" [data]="$religionChartData()"
-                            format="percent:1.0-2"></app-chart-dataset>
-                    </app-chart>
-                </div>
-                }
+                    @if (religion.slug === 'all') {
+                    <div class="religion-chart content-with-bar">
+                        <div class="religion-bar" role="presentation">
+                            @for (religion of religions; track religion) {
+                            @if (religion.slug !== "all") {
+                            <div class="religion-segment"
+                                [style.flex]="periodStats.ofReligion(religion).total"
+                                [class]="'religion-' + religion.slug">
+                            </div>
+                            }
+                            }
+                        </div>
+
+                        <app-chart mode="bar-list" aria-label="">
+                            <app-chart-data-axis label="דת"
+                                [data]="religionChartAxisData"></app-chart-data-axis>
+                            <app-chart-dataset label="אוכלוסייה (אחוז)"
+                                [data]="$religionChartData()"
+                                format="percent:1.0-2"></app-chart-dataset>
+                        </app-chart>
+                    </div>
+                    }
+                </mat-card-content>
+            </mat-card>
+            }
+        </div>
+    </section>
+
+    <section class="time-chart">
+        <h2>התפתחות במהלך הזמן</h2>
+
+        <div class="time-chart-controls">
+            <mat-button-toggle-group aria-label="קבוצות להשוואה" [(value)]="$timeChartGroupBy"
+                hideSingleSelectionIndicator>
+                <mat-button-toggle value="all">כולם</mat-button-toggle>
+                <mat-button-toggle value="gender">מגדר</mat-button-toggle>
+                <mat-button-toggle value="religion">דת</mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <mat-button-toggle-group aria-label="נרמול אוכלוסייה" [(value)]="$timeChartNorm"
+                hideSingleSelectionIndicator>
+                <mat-button-toggle value="relative" matTooltip="אחוז מהקבוצה בכל תקופה">
+                    אחוז
+                </mat-button-toggle>
+                <mat-button-toggle value="absolute" matTooltip='סה"כ אוכלוסייה'>
+                    סה"כ
+                </mat-button-toggle>
+            </mat-button-toggle-group>
+        </div>
+
+        <mat-card appearance="outlined">
+            <mat-card-content>
+                <app-chart mode="column">
+                    <app-chart-data-axis [label]="$timeChartAxisLabel()"
+                        [data]="$timeChartAxisData()"></app-chart-data-axis>
+                    @for (dataset of $timeChartData(); track dataset.label) {
+                    <app-chart-dataset [label]="dataset.label" [data]="dataset.data"
+                        [color]="dataset.color" [format]="dataset.format"></app-chart-dataset>
+                    }
+                </app-chart>
             </mat-card-content>
         </mat-card>
-        }
-    </div>
+    </section>
     }
 </main>

@@ -4,7 +4,7 @@ import { inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
 import { HttpClient } from '@angular/common/http';
 import { environment } from "src/environments/environment";
-import { Demographic, SingleDemographic } from "@shared/models/demographics";
+import { Demographic, ConcreteDemographicGroup } from "@shared/models/demographics";
 import { NameRecords } from "@shared/models/name-records";
 import { NameCsvRepository } from "./name-csv-repository";
 
@@ -45,7 +45,7 @@ export class NameRepository {
         ));
     }
 
-    getByDemographic(demographic: SingleDemographic): Observable<NameRecords> {
+    getByDemographic(demographic: ConcreteDemographicGroup): Observable<NameRecords> {
         return this.init$.pipe(map(
             () => this.repo.getByDemographic(demographic)
         ));

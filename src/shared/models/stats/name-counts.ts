@@ -1,16 +1,16 @@
-import { Gender, GenderBitmasks, genders, Religion, ReligionBitmasks, religions, SingleDemographic } from "../demographics";
+import { Gender, GenderBitmasks, genders, Religion, ReligionBitmasks, religions, ConcreteDemographicGroup, DemographicGroup } from "../demographics";
 import { getTotalByYearPeriod, NameCountsRecord } from "../name-records";
 import { FULL_DATA_PERIOD, YearPeriod } from "../year-periods";
 
 export class NameCounts implements ReadonlyNameCounts {
-    private static readonly base: Readonly<Record<string, number>> =
+    private static readonly base: Readonly<Record<DemographicGroup, number>> =
         Object.freeze(Object.fromEntries(Object.values(ReligionBitmasks).flatMap(
             religion => Object.values(GenderBitmasks).map(
                 gender => [religion | gender, 0]
             )
         )));
 
-    private readonly totalsByReligionAndGender: Record<string, number> =
+    private readonly totalsByReligionAndGender: Record<DemographicGroup, number> =
         Object.assign({}, NameCounts.base);
 
     withRecords(
@@ -19,7 +19,7 @@ export class NameCounts implements ReadonlyNameCounts {
     ): this {
         // Calculate totals for all single demographics
 
-        const recordTotals: Record<SingleDemographic, number>
+        const recordTotals: Record<ConcreteDemographicGroup, number>
             = Object.assign({}, NameCounts.base);
 
         for (const record of records) {
@@ -58,7 +58,15 @@ export class NameCounts implements ReadonlyNameCounts {
         return this;
     }
 
-    ofDemographic(religion: Religion, gender: Gender): number {
+    ofDemographicGroup(group: DemographicGroup): number {
+        if (!(group in this.totalsByReligionAndGender)) {
+            throw Error('Must be called with a demographic group.');
+        }
+
+        return this.totalsByReligionAndGender[group];
+    }
+
+    ofReligionAndGender(religion: Religion, gender: Gender): number {
         return this.totalsByReligionAndGender[
             religion.bitmask | gender.bitmask
         ];
@@ -96,7 +104,9 @@ export class NameCounts implements ReadonlyNameCounts {
 }
 
 export interface ReadonlyNameCounts {
-    ofDemographic(religion: Religion, gender: Gender): number;
+    ofDemographicGroup(group: DemographicGroup): number;
+
+    ofReligionAndGender(religion: Religion, gender: Gender): number;
 
     ofReligion(religion: Religion): number;
 

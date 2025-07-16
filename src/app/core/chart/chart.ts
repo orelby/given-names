@@ -2,7 +2,6 @@ import { DecimalPipe, CommonModule, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, contentChildren, Directive, inject, Injector, input, Type, ViewEncapsulation } from '@angular/core';
 import { BreakpointService } from './../breakpoints/breakpoint-service';
 import { BREAKPOINTS } from '../breakpoints/breakpoints';
-import { arraysEqual } from '@shared/utils/array';
 
 type ChartType = 'bar' | 'column' | 'bar-list';
 

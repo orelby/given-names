@@ -1,5 +1,5 @@
 import { DecimalPipe, CommonModule, PercentPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, contentChildren, Directive, inject, Injector, input, Type, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChildren, Directive, effect, inject, Injector, input, PipeTransform, signal, Type, ViewEncapsulation } from '@angular/core';
 import { BreakpointService } from './../breakpoints/breakpoint-service';
 import { BREAKPOINTS } from '../breakpoints/breakpoints';
 
@@ -35,17 +35,6 @@ class Dataset {
     }
 }
 
-export type DataAxisConfig = ({
-    readonly label: string;
-    readonly data: 'index' | 'index-with-dot';
-} | DatasetConfig)[];
-
-export type ValueAxisConfig = {
-    label?: string;
-    scale?: 'linear' | 'log';
-    tickLabels?: 'auto' | 'log' | 'linear' | DatasetConfig;
-}
-
 @Directive({
     selector: 'app-chart-data-axis',
 })
@@ -54,15 +43,17 @@ export class ChartDataAxis {
     readonly data = input<'index' | 'index-with-dot' | readonly string[] | readonly object[]>('index');
     readonly key = input<keyof any>();
 
+    readonly length = signal(0);
     readonly tickLabels = computed(() => {
         const data = this.data();
         const key = this.key();
 
-        return Array.from({ length: data.length }, typeof data === 'string'
-            ? (_, i) => `${i + 1}${data === 'index-with-dot' ? '.' : ''}`
-            : key
-                ? (_, i) => `${(data[i] as any)[key]}`
-                : (_, i) => `${data[i]}`
+        return Array.from({ length: this.length() },
+            typeof data === 'string'
+                ? (_, i) => `${i + 1}${data === 'index-with-dot' ? '.' : ''}`
+                : typeof key === 'undefined'
+                    ? (_, i) => `${data[i]}`
+                    : (_, i) => `${(data[i] as any)[key]}`
         );
     });
 }
@@ -88,13 +79,13 @@ export class ChartDataset {
         if (typeof f !== 'string') f = 'number:1.0-2';
 
         const [pipeName, ...args] = f.split(':');
-        const pipe = this.injector.get<any>(this.resolvePipe(pipeName));
+        const pipe = this.injector.get(this.resolvePipe(pipeName));
         return (value) => pipe.transform(value, ...args);
     })
 
     private injector = inject(Injector);
 
-    private resolvePipe(name: string): Type<any> {
+    private resolvePipe(name: string): Type<PipeTransform> {
         switch (name.trim()) {
             case 'number': return DecimalPipe;
             case 'percent': return PercentPipe;
@@ -149,8 +140,9 @@ export class Chart {
 
     protected readonly $maxValue = computed(() => {
         const maxValue = this.$datasets().reduce(
-            (accMax, dataset) => Math.max(accMax, ...dataset.dataset), 0
-        ) || 1;
+            (accMax, dataset) => Math.max(accMax, ...dataset.dataset),
+            0
+        );
 
         return this.valueAxis() === 'log' ? Math.log10(1 + maxValue) : maxValue;
     })
@@ -160,4 +152,11 @@ export class Chart {
     private readonly breakpoints = inject(BREAKPOINTS);
 
     protected readonly Math = Math;
+
+    constructor() {
+        effect(() => {
+            const length = this.$length();
+            this.dataAxes().forEach(axis => axis.length.set(length))
+        });
+    }
 }

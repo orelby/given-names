@@ -1,5 +1,9 @@
+@let timeChartData = $timeChartData();
+@let timeChartAxisData = $timeChartAxisData();
+@let timeChartFormat = $timeChartFormat();
+
 <main>
-    @if ($isLoading()) {
+    @if ($isLoading() || !timeChartData || !timeChartAxisData || !timeChartFormat) {
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     } @else if ($records().length === 0) {
     <h1>השם שחיפשת לא נמצא</h1>
@@ -92,12 +96,12 @@
                             }
                         </div>
 
-                        <app-chart mode="bar-list" aria-label="">
+                        <app-chart mode="bar-list" aria-label="" valueFormat="percent:1.0-2"
+                            [valueNorm]="1">
                             <app-chart-data-axis label="דת"
                                 [data]="religionChartAxisData"></app-chart-data-axis>
                             <app-chart-dataset label="אוכלוסייה (אחוז)"
-                                [data]="$religionChartData()"
-                                format="percent:1.0-2"></app-chart-dataset>
+                                [data]="$religionChartData()"></app-chart-dataset>
                         </app-chart>
                     </div>
                     }
@@ -129,14 +133,16 @@
 
         <mat-card appearance="outlined">
             <mat-card-content>
-                <app-chart mode="column">
+                <!-- @if ($timeChartData(); as timeChartData) { -->
+                <app-chart mode="column" [valueFormat]="timeChartFormat" [valueNorm]="1">
                     <app-chart-data-axis [label]="$timeChartAxisLabel()"
-                        [data]="$timeChartAxisData()"></app-chart-data-axis>
-                    @for (dataset of $timeChartData(); track dataset.label) {
+                        [data]="timeChartAxisData"></app-chart-data-axis>
+                    @for (dataset of timeChartData; track dataset.label) {
                     <app-chart-dataset [label]="dataset.label" [data]="dataset.data"
-                        [color]="dataset.color" [format]="dataset.format"></app-chart-dataset>
+                        [color]="dataset.color"></app-chart-dataset>
                     }
                 </app-chart>
+                <!-- } -->
             </mat-card-content>
         </mat-card>
     </section>

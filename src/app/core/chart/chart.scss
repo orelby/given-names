@@ -1,9 +1,19 @@
 .chart {
-    display: grid;
-    margin: 1rem auto;
+    & {
+        display: grid;
+        grid-template-columns: repeat(var(--label-count, 0), auto) 1fr;
+        grid-template-rows: auto 1fr;
+        margin: 1rem auto;
+        gap: 0;
+
+        --bg: var(--mat-sys-body-background);
+    }
 
     table {
         display: grid;
+        grid-column: 1 / -1;
+        grid-row: 2 / -1;
+        grid-template-columns: subgrid;
     }
 
     td,
@@ -12,16 +22,19 @@
     }
 
     tbody {
-        display: grid;
-        grid-auto-flow: row;
-        grid-auto-rows: 1fr;
-        grid-template-columns: repeat(var(--label-count, 0), auto) 1fr;
-        gap: 1em 1ch;
+        & {
+            display: grid;
+            grid-column: 1 / -1;
+            grid-template-columns: subgrid;
+            grid-auto-rows: 1fr;
+            gap: 1em 1ch;
+        }
 
         tr {
             display: grid;
             overflow: visible;
             grid-column: 1 / -1;
+            grid-template-columns: subgrid;
             grid-template-rows: repeat(var(--value-count, 0), 1fr);
             justify-items: start;
             align-items: center;
@@ -35,7 +48,7 @@
 
         td:not(.chart-label) {
             --_bg: var(--color, var(--mat-sys-secondary-container));
-            --_size: calc(max(3px, var(--size) * 100%));
+            --_size: calc(max(3px, var(--size) * (100% - 2rem)));
 
             position: relative;
             color: var(--mat-sys-on-secondary-container);
@@ -111,10 +124,6 @@
 
 .chart.bar-list {
     tbody {
-        tr {
-            grid-template-columns: repeat(var(--label-count, 0), auto) 1fr;
-        }
-
         td:not(.chart-label) {
             grid-column: 1 / -1;
         }
@@ -129,8 +138,8 @@
     overflow-x: auto;
     overflow-y: visible;
     scrollbar-width: thin;
-
-    padding-block: 2ch; // leave room for data tooltip on hover
+    padding: 2ch; // leave room for data tooltip on hover
+    padding-block-start: 0;
 
     &:dir(ltr) {
         writing-mode: sideways-lr;
@@ -141,8 +150,6 @@
     }
 
     tbody {
-        row-gap: 0;
-
         th,
         .chart-data {
             writing-mode: horizontal-tb;
@@ -160,10 +167,8 @@
         }
 
         tr {
+            gap: 0;
             border-radius: 5px;
-            padding: 1ch;
-            padding-top: 2rem; // leave room for data tooltip on hover
-            padding-bottom: 1em;
 
             &:hover {
                 background-color: hsl(from var(--mat-sys-secondary-container) h s l / 70%);
@@ -181,5 +186,70 @@
                 transition: opacity 200ms;
             }
         }
+    }
+}
+
+.chart-value-axis {
+    display: none;
+}
+
+.chart.column {
+    & {
+        position: relative;
+    }
+
+    table {
+        margin-block-start: 1ch;
+    }
+
+    .chart-ticks {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-row: 1;
+        grid-template-columns: subgrid;
+
+        background: var(--mat-sys-background);
+
+        position: sticky;
+        inset-block-start: 0;
+    }
+
+    .chart-value-axis {
+        --border-color: rgba(0, 0, 0, 0.5);
+
+        container-type: inline-size;
+
+        display: grid;
+        grid-column: 2 / -1;
+
+        border-block-end: 1px solid var(--border-color);
+        padding-block-end: 1ch;
+
+        text-align: end;
+    }
+
+    .chart-value-tick {
+        --_size: calc(max(0px, var(--size) * (100cqh - 2rem)));
+
+        writing-mode: horizontal-tb;
+        width: 100%;
+        height: max-content;
+        line-height: 1;
+        grid-area: 1 / -1;
+        translate: 0 calc(-1 * var(--_size) + 50%);
+        padding-inline-end: 0.5ch;
+    }
+
+    .chart-value-tick::after {
+        display: block;
+        position: absolute;
+        content: "";
+        height: 1px;
+        width: 1ch;
+        inset-inline-start: 100%;
+        bottom: 0.5rem;
+        background-color: var(--border-color);
+        translate: 0 50%;
+        z-index: -1;
     }
 }

@@ -163,10 +163,13 @@ export class NamePage {
         const groupStats = stats.ofDemographicGroup(group.bitmask);
         return norm === 'absolute' ? groupStats.total : groupStats.fraction;
       }),
-      format: norm === 'absolute' ? 'number:1.0-0' : 'percent:1.0-3',
       color: group.color,
     }));
   });
+
+  protected readonly $timeChartFormat = computed(() =>
+    this.$timeChartNorm() === 'absolute' ? 'number:1.0-0' : 'percent:1.0-3'
+  );
 
   protected readonly genders = genders;
 

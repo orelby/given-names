@@ -1,10 +1,14 @@
 @let dataAxes = this.dataAxes();
-@let rows = dataAxes[0].tickLabels();
 @let datasets = this.$datasets();
-@let isLogScale = valueAxis() === 'log';
+
+@if (dataAxes[0] && datasets[0]) {
+@let rows = dataAxes[0].tickLabels();
+
+@let formatValue = this.$formatValue();
+@let normalizeValue = this.$normalizeValue();
 
 <table>
-    <thead class="visually-hidden">
+    <thead class="chart-data-axis visually-hidden">
         <tr>
             @for (axis of dataAxes; track axis) {
             <th scope="col">{{ axis.label() }}</th>
@@ -20,13 +24,35 @@
             @for (axis of dataAxes; track axis) {
             <th scope="row" class="chart-label">{{ axis.tickLabels()[i] }}</th>
             }
-            @for (field of datasets; track field.dataset) {
-            <td [style.--size]="(isLogScale ? Math.log10(1 + field.dataset.get(i)) : field.dataset.get(i)) / this.$maxValue()"
-                [style.--color]="field.color">
-                <span class="chart-data">{{ field.formatter(field.dataset.get(i)) }}</span>
+            @for (field of datasets; track field.data) {
+            <td [style.--size]="normalizeValue(field.data.get(i))" [style.--color]="field.color">
+                <span class="chart-data">{{ formatValue(field.data.get(i)) }}</span>
             </td>
             }
         </tr>
         }
     </tbody>
 </table>
+
+@let valueAxisTicks = $valueAxisTicks();
+<div role="presentation" class="chart-ticks">
+    <div class="chart-value-axis">
+        @for (tick of valueAxisTicks; track tick) {
+        <div class="chart-value-tick" [style.--size]="normalizeValue(tick)">
+            {{formatValue(tick)}}
+        </div>
+        }
+    </div>
+</div>
+} @else {
+<div style="
+writing-mode: horizontal-tb;
+    display: grid;
+    grid-row: 1 / -1;
+    grid-column: 1 / -1;
+    place-self: center;
+    scale: 0.25;
+    ">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+</div>
+}

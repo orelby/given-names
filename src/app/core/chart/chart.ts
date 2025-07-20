@@ -1,7 +1,16 @@
 import { DecimalPipe, CommonModule, PercentPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, contentChildren, Directive, effect, inject, Injector, input, PipeTransform, signal, Type, ViewEncapsulation } from '@angular/core';
+import {
+    AfterContentChecked,
+    ChangeDetectionStrategy, Component, computed, ContentChildren, contentChildren, DestroyRef, Directive,
+    effect, inject, Injector, input, PipeTransform, QueryList, Signal, signal, Type, ViewEncapsulation
+} from '@angular/core';
 import { BreakpointService } from './../breakpoints/breakpoint-service';
 import { BREAKPOINTS } from '../breakpoints/breakpoints';
+import { niceLinearTicks, niceLogTicks } from './ticks';
+import { distinctUntilChanged, map, startWith, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { arraysEqual } from '@shared/utils/array';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 type ChartType = 'bar' | 'column' | 'bar-list';
 
@@ -60,103 +69,246 @@ export class ChartDataAxis {
 
 @Directive({
     selector: 'app-chart-dataset',
-    providers: [DecimalPipe, PercentPipe]
 })
 export class ChartDataset {
     readonly label = input.required<string>();
     readonly color = input<string>();
     readonly data = input.required<readonly number[] | readonly object[]>();
     readonly key = input<keyof any>();
-    readonly format = input<string | ((value: number) => string)>();
 
     readonly dataset = computed(() => new Dataset(this.data(), this.key()));
-
-    readonly formatter = computed<(value: number) => string>(() => {
-        let f = this.format();
-
-        if (typeof f === 'function') return f;
-
-        if (typeof f !== 'string') f = 'number:1.0-2';
-
-        const [pipeName, ...args] = f.split(':');
-        const pipe = this.injector.get(this.resolvePipe(pipeName));
-        return (value) => pipe.transform(value, ...args);
-    })
-
-    private injector = inject(Injector);
-
-    private resolvePipe(name: string): Type<PipeTransform> {
-        switch (name.trim()) {
-            case 'number': return DecimalPipe;
-            case 'percent': return PercentPipe;
-            default: throw new Error(`Unsupported pipe: ${name}`);
-        }
-    }
 }
 
 @Component({
     selector: 'app-chart',
     templateUrl: './chart.html',
     styleUrls: ['./chart.scss'],
-    imports: [CommonModule],
+    imports: [CommonModule, MatProgressSpinner],
+    providers: [DecimalPipe, PercentPipe],
     host: {
         '[class.chart]': 'true',
-        '[class]': 'this.$curMode()',
+        '[class]': 'this.$mode()',
         '[style.--label-count]': 'this.dataAxes().length',
         '[style.--value-count]': 'this.$datasets().length',
     },
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
 })
-export class Chart {
+export class Chart implements AfterContentChecked {
     readonly mode = input<ChartType>('bar');
-
-    readonly datasets = contentChildren<ChartDataset>(ChartDataset);
-
-    readonly dataAxes = contentChildren<ChartDataAxis>(ChartDataAxis);
 
     readonly valueAxis = input<readonly number[] | 'log' | 'linear' | 'auto'>('auto');
 
-    protected readonly $curMode = computed(() => {
+    /**
+     * Format of data values including value axis.
+     * Supported formats: number or percent pipes.
+     */
+    readonly valueFormat = input<string | undefined>('number:1.0-2');
+
+    /**
+     * Max value for data normalization used when using percent in valueFormat.
+     */
+    readonly valueNorm = input<number | 'max'>('max');
+
+    protected readonly $mode = computed(() => {
+        const mode = this.mode();
         return this.$breakpointUp().minWidth < this.breakpoints.md
-            ? this.mode().replace('column', 'bar')
-            : this.mode();
+            ? (mode === 'column' ? 'bar' : mode)
+            : mode;
     });
 
-    protected readonly $datasets = computed(
-        () => this.datasets().map(comp => ({
-            label: comp.label(),
-            color: comp.color(),
-            dataset: comp.dataset(),
-            formatter: comp.formatter(),
-        }))
-    );
+    @ContentChildren(ChartDataset, { emitDistinctChangesOnly: true })
+    _datasets!: QueryList<ChartDataset>;
 
-    protected readonly $length = computed(() => Math.max(0,
-        this.$datasets().reduce(
-            (accMinLength, dataset) => Math.min(accMinLength, dataset.dataset.length), Infinity
+    protected readonly datasets = signal<ChartDataset[]>([]);
+
+    @ContentChildren(ChartDataAxis, { emitDistinctChangesOnly: true })
+    _dataAxes!: QueryList<ChartDataAxis>;
+
+    protected readonly dataAxes = signal<ChartDataAxis[]>([]);
+
+    protected readonly $length = computed(() => {
+        const datasets = this.$datasets();
+        return datasets.length === 0 ? 0 : datasets.reduce(
+            (accMinLength, dataset) => Math.min(accMinLength, dataset.data.length), Infinity
         )
-    ));
+    });
 
-    protected readonly $maxValue = computed(() => {
-        const maxValue = this.$datasets().reduce(
-            (accMax, dataset) => Math.max(accMax, ...dataset.dataset),
-            0
+    private rand = Math.random();
+
+    protected readonly $datasets = computed(() => {
+        return this.datasets().map(comp => {
+            return ({
+                label: comp.label(),
+                color: comp.color(),
+                data: comp.dataset(),
+            })
+        })
+    });
+
+    protected readonly $valueAxisTicks = computed(() => {
+        const maxValueInput = this.maxValueFromInput();
+        const maxDataValue = this.maxValueFromData();
+        const normByInput = maxDataValue !== maxValueInput;
+
+        const isPercent = this.valueFormat()?.startsWith('percent');
+
+        const maxValue = isPercent
+            ? (normByInput ? maxDataValue / maxValueInput : 1)
+            : maxDataValue;
+
+        const maxTicks = 6;
+
+        const ticks = (this.valueAxis() === 'log')
+            ? niceLogTicks(
+                this.minNonZeroDataValue() / (isPercent ? maxValueInput : 1),
+                maxValue,
+                maxTicks
+            )
+            : niceLinearTicks(0, maxValue, maxTicks);
+
+        const result = isPercent
+            ? normByInput
+                ? ticks.map(tick => tick * maxValueInput)
+                : ticks.map(tick => tick * maxDataValue)
+            : ticks;
+
+        return result;
+    });
+
+    protected readonly $formatValue = computed<(value: number) => string>(() => {
+
+        let f = this.valueFormat();
+
+        // if (typeof f === 'function') return f;
+
+        if (typeof f !== 'string') f = 'number:1.0-2';
+
+        const [pipeName, ...args] = f.split(':');
+        const pipe = this.injector.get(this.resolvePipe(pipeName));
+        if (pipeName === 'percent') {
+            const normValue = this.maxValueFromInput();
+            return (value) => pipe.transform(value / normValue, ...args)
+        } else {
+            return (value) => pipe.transform(value, ...args);
+        }
+    })
+
+    protected readonly $normalizeValue = computed<(value: number) => number>(() => {
+        const normValue = this.maxValueForAxis();
+
+        const isLinearScale = this.valueAxis() !== 'log';
+
+        if (isLinearScale) {
+            return value => value / normValue;
+        }
+
+        const ticks = this.$valueAxisTicks();
+        const minTick = ticks.at(1) ?? normValue;
+        const minTickExponent = Math.log10(minTick);
+        const isPercent = this.valueFormat()?.startsWith('percent');
+        const scaleByExponent = 1 - (minTickExponent < 0 || isPercent ? minTickExponent : 0);
+        const scaleBy = 10 ** scaleByExponent;
+
+        console.log({});
+
+        const logNormValue = Math.log10(normValue) + scaleByExponent;
+        const normalize = (value: number) => (value * scaleBy < 1 ? 0 : Math.log10(value) + scaleByExponent) / logNormValue;
+
+        return normalize;
+    });
+
+    private readonly maxValueFromData = computed(() => {
+        return this.$datasets().reduce(
+            (accMax, dataset) => Math.max(accMax, ...dataset.data), 0
+        );
+    });
+
+    private readonly maxValueFromInput = computed(() => {
+        const maxValueInput = this.valueNorm();
+
+        return maxValueInput === 'max'
+            ? this.maxValueFromData()
+            : maxValueInput;
+    });
+
+    protected readonly maxValueForAxis = computed(() => {
+        const maxValue = Math.max(
+            this.maxValueFromData(),
+            this.$valueAxisTicks().at(-1) ?? 0
         );
 
-        return this.valueAxis() === 'log' ? Math.log10(1 + maxValue) : maxValue;
+        return maxValue;
     })
+
+    private readonly minNonZeroDataValue = computed(() => {
+        return Math.max(
+            0,
+            this.$datasets().reduce((accMin, dataset) =>
+                Math.min(
+                    accMin,
+                    [...dataset.data].reduce(
+                        (prevMin, value) => value > 0 && value < prevMin
+                            ? value : prevMin,
+                        accMin
+                    )
+                ),
+                Infinity
+            )
+        );
+    });
+
+    protected readonly Math = Math;
 
     private readonly $breakpointUp = inject(BreakpointService).$breakpointUp;
 
     private readonly breakpoints = inject(BREAKPOINTS);
 
-    protected readonly Math = Math;
+    private readonly injector = inject(Injector);
+
+    private readonly destroyRef = inject(DestroyRef);
+
+    private contentChildrenInitialized = false;
 
     constructor() {
         effect(() => {
             const length = this.$length();
             this.dataAxes().forEach(axis => axis.length.set(length))
         });
+    }
+
+    ngAfterContentChecked(): void {
+        if (!this.contentChildrenInitialized) {
+            // Not using signal content queries (`contentChildren`)
+            // because of a bug causing error NG0950 when using them in `effect`.
+            // (NG0950: Required input is accessed before a value is set)
+            // https://github.com/angular/angular/issues/59067
+
+            this.contentChildrenInitialized = true;
+
+            this._dataAxes.changes.pipe(
+                startWith(this._dataAxes),
+                map(q => q.toArray() as ChartDataAxis[]),
+                distinctUntilChanged(arraysEqual),
+                tap(a => this.dataAxes.set(a)),
+                takeUntilDestroyed(this.destroyRef),
+            ).subscribe();
+
+            this._datasets.changes.pipe(
+                startWith(this._datasets),
+                map(q => q.toArray() as ChartDataset[]),
+                distinctUntilChanged(arraysEqual),
+                tap(a => this.datasets.set(a)),
+                takeUntilDestroyed(this.destroyRef),
+            ).subscribe();
+        }
+    }
+
+    private resolvePipe(name: string): Type<PipeTransform> {
+        switch (name) {
+            case 'number': return DecimalPipe;
+            case 'percent': return PercentPipe;
+            default: throw new Error(`Unsupported pipe: ${name}`);
+        }
     }
 }

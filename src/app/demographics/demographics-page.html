@@ -100,21 +100,23 @@
 
         <section>
             <h3>עשירונים</h3>
-            <app-chart mode="column" [valueAxis]="$selectedQuantileScale()">
+            <app-chart mode="column" [valueAxis]="$selectedQuantileScale()"
+                [valueFormat]="$quantileDataFormat()"  [valueNorm]="groupStats.populationTotal">
                 <app-chart-data-axis label="עשירון" [data]="quantileStats.deciles"
                     key="index"></app-chart-data-axis>
-                <app-chart-dataset [label]="label" [data]="quantileStats.deciles" [key]="key"
-                    [format]="$quantileDataFormat()"></app-chart-dataset>
+                <app-chart-dataset [label]="label" [data]="quantileStats.deciles"
+                    [key]="key"></app-chart-dataset>
             </app-chart>
         </section>
 
         <section>
-            <h3>העשירון העליון – אחוזונים</h3>
-            <app-chart mode="column" [valueAxis]="$selectedQuantileScale()">
+            <h3>אחוזונים – העשירון העליון</h3>
+            <app-chart mode="column" [valueAxis]="$selectedQuantileScale()"
+                [valueFormat]="$quantileDataFormat()" [valueNorm]="groupStats.populationTotal">
                 <app-chart-data-axis label="מאיון (אחוזון)" [data]="quantileStats.topPercentiles"
                     key="index"></app-chart-data-axis>
-                <app-chart-dataset [label]="label" [data]="quantileStats.topPercentiles" [key]="key"
-                    [format]="$quantileDataFormat()"></app-chart-dataset>
+                <app-chart-dataset [label]="label" [data]="quantileStats.topPercentiles"
+                    [key]="key"></app-chart-dataset>
 
             </app-chart>
         </section>

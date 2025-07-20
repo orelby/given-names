@@ -145,7 +145,7 @@ export class DemographicsPage {
   protected $quantileDataFormat = computed(() => {
     const total = this.$groupStats()?.populationTotal;
     return total && this.$selectedQuantileDataFormat() === 'relative'
-      ? (value: number) => (value * 100 / total).toFixed(3) + '%'
+      ? 'percent:1.0-3'
       : undefined;
   });
 }

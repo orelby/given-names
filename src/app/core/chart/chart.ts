@@ -195,25 +195,65 @@ export class Chart implements AfterContentChecked {
     })
 
     protected readonly $normalizeValue = computed<(value: number) => number>(() => {
-        const normValue = this.maxValueForAxis();
+        const normValue = this.maxValueForAxis() || 1;
 
-        const isLinearScale = this.valueAxis() !== 'log';
-
-        if (isLinearScale) {
+        if (this.valueAxis() !== 'log') {
             return value => value / normValue;
         }
 
+        /*
+         * Realign log scale so that tick exponents are spaced evenly.
+         *
+         * - Shift exponents to align the non-zero ticks
+         *   to (1, 2, 3, ...) * `tickExponentSpacing` / `exponentNorm`.
+         */
+
         const ticks = this.$valueAxisTicks();
-        const minTick = ticks.at(1) ?? normValue;
-        const minTickExponent = Math.log10(minTick);
-        const isPercent = this.valueFormat()?.startsWith('percent');
-        const scaleByExponent = 1 - (minTickExponent < 0 || isPercent ? minTickExponent : 0);
-        const scaleBy = 10 ** scaleByExponent;
 
-        console.log({});
+        const firstNonZeroTickExponent =
+            Math.log10((ticks[1] ?? normValue) || 1);
 
-        const logNormValue = Math.log10(normValue) + scaleByExponent;
-        const normalize = (value: number) => (value * scaleBy < 1 ? 0 : Math.log10(value) + scaleByExponent) / logNormValue;
+        const tickExponentSpacing = ticks[2]
+            ? (Math.log10(ticks[2]) - firstNonZeroTickExponent)
+            : 1;
+
+        const exponentShift = tickExponentSpacing - firstNonZeroTickExponent;
+
+        const exponentNorm = Math.log10(normValue) + exponentShift;
+
+        const minValue = 10 ** (-exponentShift);
+
+        const normalize = (value: number) => value < minValue ? 0
+            : (Math.log10(value) + exponentShift) / exponentNorm;
+
+        /*
+         * [COMMENTED OUT FOR PROSPERITY]
+         *   
+         * Shift and scale the 10 orders of magnitude
+         * below the first non-zero tick to fill its lowest 1%.
+         *   
+         * But this is silly as 1% is too small anyway, could just clip.
+         */
+
+        /* 
+        const lowExponentShift = -Math.log10(EPSILON);
+        const lowExponentMin = 1 / 100;
+        const lowExponentNorm = (lowExponentMin + lowExponentShift) * exponentNorm / lowExponentMin;
+
+        const normalize = (value: number) => {
+            if (value < EPSILON) {
+                return 0;
+            }
+
+            const exponent = Math.log10(value) + exponentShift;
+
+            if (exponent > lowExponentMin) {
+                return exponent / exponentNorm;
+            }
+
+            return (exponent + lowExponentShift) / lowExponentNorm;
+        };
+        */
 
         return normalize;
     });
@@ -242,23 +282,18 @@ export class Chart implements AfterContentChecked {
     })
 
     private readonly minNonZeroDataValue = computed(() => {
-        return Math.max(
-            0,
-            this.$datasets().reduce((accMin, dataset) =>
-                Math.min(
-                    accMin,
-                    [...dataset.data].reduce(
-                        (prevMin, value) => value > 0 && value < prevMin
-                            ? value : prevMin,
-                        accMin
-                    )
-                ),
-                Infinity
-            )
-        );
-    });
+        let min = Infinity;
 
-    protected readonly Math = Math;
+        for (const dataset of this.$datasets()) {
+            for (const value of dataset.data) {
+                if (value > 0 && value < min) {
+                    min = value;
+                }
+            }
+        }
+
+        return Number.isFinite(min) ? min : 0;
+    });
 
     private readonly $breakpointUp = inject(BreakpointService).$breakpointUp;
 

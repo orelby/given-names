@@ -101,7 +101,7 @@
         <section>
             <h3>עשירונים</h3>
             <app-chart mode="column" [valueAxis]="$selectedQuantileScale()"
-                [valueFormat]="$quantileDataFormat()"  [valueNorm]="groupStats.populationTotal">
+                [valueFormat]="$quantileDataFormat()" [valueNorm]="groupStats.populationTotal">
                 <app-chart-data-axis label="עשירון" [data]="quantileStats.deciles"
                     key="index"></app-chart-data-axis>
                 <app-chart-dataset [label]="label" [data]="quantileStats.deciles"

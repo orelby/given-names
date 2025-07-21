@@ -5,7 +5,7 @@ export interface TickConfig {
     numTicks: number;
 }
 
-const EPSILON = Number.EPSILON * 1000;
+const EPSILON = 1e-10;
 
 export function ticks(config: TickConfig): number[] {
     const ticks = [];
@@ -70,40 +70,34 @@ export function niceLinearTicks(valueMin: number, valueMax: number, maxTicks = 6
     return ticks(bestCandidate);
 }
 
-export function niceLogTicks(valueMin: number, valueMax: number, maxTicks = 6) {
-    if (valueMax <= 0) throw new Error("Argument of log must be positive");
+/**
+ * Returns equally-spaced log-scale axis ticks around a given value range.
+ */
+export function niceLogTicks(
+    valueMin: number,
+    valueMax: number,
+    maxTicks = 6,
+    includeZero = true
+) {
+    if (valueMin <= 0 || valueMax <= 0) throw new Error(
+        "Argument of log must be positive"
+    );
 
-    if (maxTicks < 2) throw new Error("maxTicks must be at least 2");
+    const minExponent = Math.floor(Math.log10(valueMin) + EPSILON);
+    const maxExponent = Math.ceil(Math.log10(valueMax) - EPSILON);
 
-    const maxExponent = Math.ceil(Math.log10(valueMax) - EPSILON) + 1;
+    const ticks = [];
 
-    const ticks = [0];
+    if (includeZero) {
+        ticks.push(0);
+    }
 
-    if (maxTicks > maxExponent) {
-        const numFractionalTicks = maxTicks - maxExponent - 1;
+    const numTicksLeft = includeZero ? maxTicks - 1 : maxTicks;
+    const exponentRange = maxExponent - minExponent + 1;
+    const logTickSpacing = Math.ceil(exponentRange / numTicksLeft - EPSILON);
 
-        const minFractionalExponent = valueMin > 0
-            ? Math.floor(Math.log10(valueMin) + EPSILON)
-            : 0;
-
-        console.log({ valueMin, valueMax, maxExponent, minFractionalExponent, numFractionalTicks })
-
-
-        for (let i = Math.max(minFractionalExponent, -numFractionalTicks);
-            i < 0 && i < maxExponent;
-            i++) {
-            ticks.push(10 ** i);
-        }
-
-        for (let i = 0; i < maxExponent; i++) {
-            ticks.push(10 ** i);
-        }
-    } else {
-        const logTickSpacing = Math.ceil(maxExponent / (maxTicks - 1) - EPSILON);
-
-        for (let i = logTickSpacing - 1; i < maxExponent; i += logTickSpacing) {
-            ticks.push(10 ** i);
-        }
+    for (let i = minExponent; i <= maxExponent + EPSILON; i += logTickSpacing) {
+        ticks.push(10 ** i);
     }
 
     return ticks;

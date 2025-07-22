@@ -40,7 +40,11 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "subresourceIntegrity": true,
+              "security": {
+                "autoCsp": true
+              }
             },
             "development": {
               "optimization": false,

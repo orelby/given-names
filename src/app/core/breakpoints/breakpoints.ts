@@ -19,7 +19,7 @@ export const BREAKPOINTS = new InjectionToken<BreakpointMap>(
 
 export type Breakpoint = keyof typeof DEFAULT_BREAKPOINTS;
 
-export type BreakpointMap = Record<Breakpoint, number>;
+export type BreakpointMap = Readonly<Record<Breakpoint, number>>;
 
 export interface BreakpointDefinition {
     readonly name: Breakpoint;

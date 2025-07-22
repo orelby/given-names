@@ -7,7 +7,10 @@ import { BreakpointDefinition, BREAKPOINTS, getBreakpointsUp, matchFirstBreakpoi
 
 @Injectable({ providedIn: 'root' })
 export class BreakpointService {
-    private readonly breakpointsUp = getBreakpointsUp(inject(BREAKPOINTS));
+    public readonly breakpoints = inject(BREAKPOINTS);
+
+    private readonly breakpointsUp = getBreakpointsUp(this.breakpoints);
+
     private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
     readonly $breakpointUp = toSignal(

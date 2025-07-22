@@ -48,7 +48,7 @@
 
         td:not(.chart-label) {
             --_bg: var(--color, var(--mat-sys-secondary-container));
-            --_size: calc(max(3px, var(--size) * (100% - 2rem)));
+            --_size: calc(max(3px, var(--size) * 100%));
 
             position: relative;
             color: var(--mat-sys-on-secondary-container);
@@ -138,7 +138,7 @@
     overflow-x: auto;
     overflow-y: visible;
     scrollbar-width: thin;
-    padding: 2ch; // leave room for data tooltip on hover
+    padding: 2ch; // Leave room for data tooltip on hover
     padding-block-start: 0;
 
     &:dir(ltr) {
@@ -153,6 +153,11 @@
         th,
         .chart-data {
             writing-mode: horizontal-tb;
+        }
+
+        td:not(.chart-data) {
+            // Leave 2rem for data tooltip on highest column
+            --_size: calc(max(3px, var(--size) * (100% - 2rem)));
         }
 
         .chart-data {

@@ -64,12 +64,20 @@ $theme: mat.define-theme(
 
 :root {
     min-width: 20ch;
+    color-scheme: light;
     height: 100%;
     padding: 0;
     margin: 0;
     font: var(--mat-sys-body-medium);
-    scrollbar-gutter: stable;
-    color-scheme: light;
+
+    /*
+    * Initially added scrollbar-gutter as a progressive enhancement.
+    * Replaced with scroll due to unexpected behavior in Chrome (works in Firefox).
+    * The scrollbar placeholder width is included in clientWidth.
+    * This causes improper positioning of Angular's overlays (e.g. autocomplete panel).
+    */
+    // scrollbar-gutter: stable;
+    overflow-y: scroll;
 
     --gender-color-all: #{mat.m2-get-color-from-palette(mat.$m2-gray-palette, 600)};
     --gender-color-men: #{mat.m2-get-color-from-palette(mat.$m2-blue-palette, 400)};
@@ -166,5 +174,13 @@ li {
 
     th:first-child:not(:only-of-type) {
         font: var(--mat-sys-title-medium);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation-duration: 0s;
     }
 }

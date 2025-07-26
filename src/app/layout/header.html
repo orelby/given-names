@@ -1,0 +1,66 @@
+@let isDrawerOpen = this.$isDrawerOpen();
+@let isSearchOpen = this.$isSearchOpen();
+
+<header class="navbar" [class.navbar--with-search-open]="isSearchOpen"
+    [class.navbar--with-drawer-open]="isDrawerOpen" #navbar>
+
+    <button mat-icon-button class="show-mobile"
+        (click)="isDrawerOpen ? closeDrawer() : openDrawer()"
+        [ariaLabel]="isDrawerOpen ? `סגירת התפריט` : `פתיחת התפריט`"
+        [ariaExpanded]="isDrawerOpen ? 'true' : 'false'" tabindex="2">
+        <mat-icon class="menu-toggle-icon" [fontIcon]="isDrawerOpen ? 'close' : 'menu'"
+            aria-hidden="true"></mat-icon>
+    </button>
+
+    <a tabindex="1" mat-button class="app-logo" routerLink="/">שמות ישראל</a>
+
+    <nav class="show-desktop">
+        <a mat-button routerLink="/names/search" tabindex="1">חיפוש שמות</a>
+        <a mat-button routerLink="/demographic" tabindex="1">קבוצות אוכלוסייה</a>
+    </nav>
+
+    <span class="spacer show-desktop"></span>
+
+    <form #searchForm class="search-form show-desktop"
+        (ngSubmit)="onSearch(searchAutocompleteTrigger)">
+        <mat-form-field subscriptSizing="dynamic" appearance="outline">
+            <mat-icon class="search-icon" fontIcon="search" matPrefix aria-hidden="true"></mat-icon>
+
+            <input #searchInput #searchAutocompleteTrigger="matAutocompleteTrigger" matInput
+                [formControl]="searchFormControl" class="search-input"
+                [placeholder]="$searchInputPlaceholder()" [matAutocomplete]="searchAutocomplete"
+                (focus)="$isSearchFocused.set(true)" (blur)="$isSearchFocused.set(false)">
+
+            <mat-autocomplete #searchAutocomplete="matAutocomplete"
+                (optionSelected)="onSearch(searchAutocompleteTrigger)"
+                (opened)="$isAutocompleteOpen.set(true)" (closed)="$isAutocompleteOpen.set(false)"
+                [panelWidth]="$autocompletePanelWidth()">
+                @for (option of $autocompleteOptions(); track option) {
+                <mat-option [value]="option">{{ option }}</mat-option>
+                }
+            </mat-autocomplete>
+        </mat-form-field>
+    </form>
+
+    <button matIconButton aria-label="פתיחת החיפוש" aria-expanded="false"
+        class="open-search show-mobile" (click)="$isSearchFocused.set(true)" tabindex="1">
+        <mat-icon matIconSuffix fontIcon="search" aria-hidden="true"></mat-icon>
+    </button>
+
+    <button matIconButton aria-label="סגירת החיפוש" aria-expanded="true" class="close-search"
+        (click)="$isSearchFocused.set(false)" (focus)="$isSearchFocused.set(true)"
+        (blur)="$isSearchFocused.set(false)">
+        <mat-icon matIconSuffix fontIcon="close" aria-hidden="true"></mat-icon>
+    </button>
+</header>
+
+<div class="backdrop show-mobile" [class.visible]="isDrawerOpen" tabindex="-1"
+    (click)="closeDrawer()"></div>
+
+<aside #drawer class="drawer show-mobile" [class.visible]="isDrawerOpen" role="dialog"
+    aria-modal="true" aria-label="תפריט ראשי">
+    <mat-nav-list (click)="closeDrawer()">
+        <a mat-list-item routerLink="/names/search">חיפוש שמות</a>
+        <a mat-list-item routerLink="/demographic">קבוצות אוכלוסייה</a>
+    </mat-nav-list>
+</aside>

@@ -1,21 +1,5 @@
 <app-header></app-header>
 
-<form class="search-form" (ngSubmit)="onSearch(inputElement, autoCompleteTrigger)">
-  <mat-form-field class="example-full-width" subscriptSizing="dynamic">
-    <!-- <mat-label>חיפוש שם</mat-label> -->
-    <input type="text" placeholder="חיפוש שם..." matInput [formControl]="nameControl"
-      [matAutocomplete]="autoComplete" #autoCompleteTrigger="matAutocompleteTrigger" #inputElement
-      (focus)="inputElement.select()">
-    <mat-icon fontIcon="search" matPrefix></mat-icon>
-    <mat-autocomplete #autoComplete="matAutocomplete"
-      (optionSelected)="onSearch(inputElement, autoCompleteTrigger)">
-      @for (option of suggestedNames$ | async; track option) {
-      <mat-option [value]="option">{{option}}</mat-option>
-      }
-    </mat-autocomplete>
-  </mat-form-field>
-</form>
-
 <router-outlet />
 
 <app-footer></app-footer>

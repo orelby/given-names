@@ -1,0 +1,71 @@
+<main>
+    <header>
+        <h1 class="visually-hidden">חיפוש שמות</h1>
+
+        <form class="search-form" (ngSubmit)="search()">
+            <mat-form-field subscriptSizing="dynamic" appearance="outline" class="search-input">
+                <mat-label>שם לחיפוש</mat-label>
+                <mat-icon fontIcon="search" matPrefix></mat-icon>
+                <input #inputElement type="text" matInput [formControl]="nameControl"
+                    (focus)="inputElement.select()">
+            </mat-form-field>
+
+            <div style="display: flex; align-items: center; gap: 1ch;">
+                <span style="margin-inline-end: auto;">
+                    {{ $results.hasValue() ? `${$results.value().length | number} תוצאות` : '' }}
+                </span>
+
+                <mat-icon role="presentation" fontIcon="filter_list"></mat-icon>
+
+                <mat-form-field subscriptSizing="dynamic" appearance="outline" class="select-input">
+                    <mat-select [(value)]="matchTypeSlug">
+                        <mat-select-trigger>{{matchType().text}}
+                        </mat-select-trigger>
+                        @for (option of matchTypeOptions; track option) {
+                        <mat-option [value]="option.slug">{{option.text}}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field subscriptSizing="dynamic" appearance="outline" class="select-input">
+                    <mat-select [(value)]="populationThreshold">
+                        <mat-select-trigger>לפחות {{populationThreshold()}} אנשים
+                        </mat-select-trigger>
+                        @for (option of populationThresholdOptions; track option) {
+                        <mat-option [value]="option">{{option}}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </form>
+    </header>
+
+    @if ($results.isLoading()) {
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    } @else if ($results.error()) {
+    <p>התרחשה שגיאה בעת טעינת הנתונים.</p>
+    <p>נא לרענן את העמוד או לנסות שוב מאוחר יותר.</p>
+    } @else {
+    <!-- flicker supposedly ficked in next patch https://github.com/angular/components/pull/31316 -->
+    <section class="results">
+        <cdk-virtual-scroll-viewport #resultsViewport scrollWindow [itemSize]="itemSize"
+            [minBufferPx]="itemSize * 10" [maxBufferPx]="itemSize * 20"
+            (scrolledIndexChange)="onScrollIndexChange($event)">
+            <ng-container *cdkVirtualFor="let result of $results.value()">
+                <ng-container
+                    *ngTemplateOutlet="resultTemplate; context: { $implicit: result }"></ng-container>
+            </ng-container>
+        </cdk-virtual-scroll-viewport>
+    </section>
+    }
+</main>
+
+<ng-template #resultTemplate let-result>
+    <div class="result">
+        <a class="result-link" routerLink="/name/{{result}}" matRipple>
+            <h2>{{ result }}</h2>
+            <mat-icon class="arrow-icon mat-icon-rtl-mirror" aria-hidden="true"
+                fontIcon="chevron_right" aria-hidden="true"></mat-icon>
+        </a>
+    </div>
+</ng-template>

@@ -1,4 +1,4 @@
-import { map, Observable, shareReplay, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, Observable, of, shareReplay, switchMap, tap } from 'rxjs';
 import { inject, Injectable } from '@angular/core';
 import { soundexPrefix } from '@shared/utils/soundex';
 import { HttpClient } from '@angular/common/http';
@@ -24,7 +24,7 @@ export class NameSuggestionService {
 
   suggestSimilarNames(
     prefix: string,
-    limit = 10
+    maxResults = 10
   ): Observable<string[]> {
     // Optimize as needed
     return this.soundexCodebook$.pipe(
@@ -56,8 +56,8 @@ export class NameSuggestionService {
 
         exactMatches.sort();
 
-        if (exactMatches.length >= limit) {
-          return exactMatches.slice(0, limit);
+        if (exactMatches.length >= maxResults) {
+          return exactMatches.slice(0, maxResults);
         }
 
         // TODO: consider adjusting threshold + designing custom edit distance costs
@@ -68,12 +68,38 @@ export class NameSuggestionService {
           .map(name => ({ name, dist: distance(prefix, name) }))
           .filter(({ dist }) => dist < editDistanceThreshold)
           .sort((a, b) => (a.dist - b.dist) || (a.name <= b.name ? -1 : 1))
-          .slice(0, limit - exactMatches.length)
+          .slice(0, maxResults - exactMatches.length)
           .map(({ name }) => name);
         return [...exactMatches, ...extraMatches];
       }),
 
       // tap(() => console.timeEnd(`soundex for ${prefix}`)),
     );
+  }
+
+  suggestSimilarNamesForObservable(
+    prefix$: Observable<string | null>,
+    options?: {
+      maxResults?: number,
+      debounceDuration?: number,
+      minLength?: number,
+    }
+  ): Observable<string[]> {
+    const {
+      maxResults = 10,
+      debounceDuration = 200,
+      minLength = 2,
+    } = options ?? {};
+
+    return prefix$.pipe(
+      map(prefix => (prefix || '').trim()),
+      distinctUntilChanged(),
+      debounceTime(debounceDuration),
+      switchMap(
+        value => value.length >= minLength
+          ? this.suggestSimilarNames(value, maxResults)
+          : of([])
+      )
+    )
   }
 }

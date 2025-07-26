@@ -3,7 +3,7 @@
 @let timeChartFormat = $timeChartFormat();
 
 <main>
-    @if ($isLoading() || !timeChartData || !timeChartAxisData || !timeChartFormat) {
+    @if ($isLoading()) {
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     } @else if ($records().length === 0) {
     <h1>השם שחיפשת לא נמצא</h1>
@@ -42,7 +42,8 @@
             @for (religion of religions; track religion) {
             <mat-card appearance="outlined" [class]="'religion-' + religion.slug" role="group">
                 <mat-card-header>
-                    <h3>{{religion.icon}} {{religion.text}}</h3>
+                    <h3>{{religion.icon}}
+                        {{religion.slug === 'all' ? 'כלל האוכלוסייה' : religion.text}}</h3>
                 </mat-card-header>
                 <mat-card-content>
                     <div class="content-with-bar">

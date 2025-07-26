@@ -61,7 +61,8 @@ $max-inline-size: 70ch;
     }
 }
 
-// keep outside of .demographic-selection since it's in an overlay
+// Keep outside of .demographic-selection since it's in an overlay
+// Keep element name instead of .mat-mdc-option to catch view encapsulation binding
 mat-option {
     --mat-option-label-text-size: var(--mat-sys-label-large-size);
     padding: 1ch 1.5ch;
@@ -81,7 +82,8 @@ h1 span {
     margin: 0 auto;
 }
 
-.quantile-controls, .quantile-controls > div {
+.quantile-controls,
+.quantile-controls > div {
     display: flex;
     gap: 2ch;
     flex-wrap: wrap;

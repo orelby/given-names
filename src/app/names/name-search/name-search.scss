@@ -1,0 +1,85 @@
+@use "@angular/material" as mat;
+
+:host {
+    display: block;
+    max-width: 60ch;
+    margin: 0 auto;
+}
+
+:host::ng-deep {
+    .search-input {
+        @include mat.form-field-density(0);
+        margin-block-end: 1rem;
+
+        &,
+        .mat-mdc-form-field-infix {
+            width: 100%;
+        }
+    }
+
+    .select-input {
+        @include mat.form-field-density(-5);
+
+        &,
+        .mat-mdc-form-field-infix {
+            // min-width: 5ch;
+            width: auto;
+        }
+
+        mat-select-trigger {
+            display: flex;
+            gap: 1ch;
+            // align-items: ;
+            margin-inline-end: 1ch;
+        }
+    }
+}
+
+.results {
+    margin-block: 0.5rem;
+
+    --mat-ripple-color: hsl(from var(--mat-sys-surface-variant) h s calc(l * 0.8) / 10%);
+    // --mat-ripple-color: hsl(from white h s l / 10%);
+}
+
+.result {
+    display: flex;
+    height: 70px;
+    align-items: center;
+}
+
+.result-link {
+    display: flex;
+    width: 100%;
+    padding-inline: 2ch;
+
+    gap: 2ch;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: var(--mat-sys-surface);
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--mat-sys-outline-variant);
+    border-radius: var(--mat-sys-corner-medium);
+    box-shadow: var(--mat-sys-level0);
+    color: var(--mat-sys-on-surface);
+    outline: none;
+    text-decoration: none;
+
+    font-size: 16px;
+    line-height: 1em;
+
+    &:focus-within,
+    &:hover {
+        color: var(--mat-sys-on-surface-variant);
+        background: var(--mat-sys-surface-variant);
+    }
+
+    h2 {
+        font: var(--mat-sys-title-large);
+        font-size: 1.2em;
+        line-height: 1em;
+        margin-block: 1em;
+    }
+}

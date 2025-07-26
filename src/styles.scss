@@ -58,6 +58,16 @@ $theme: mat.define-theme(
     [dir="rtl"] .mdc-list-item--with-leading-icon .mdc-list-item__start {
         margin-inline: 0.5ch;
     }
+
+    .cdk-overlay-pane:has(> .mat-mdc-select-panel) {
+        min-width: max-content;
+    }
+
+    mat-progress-spinner {
+        block-size: 2em !important;
+        inline-size: 2em !important;
+        margin: 1em auto;
+    }
 }
 
 // global app styles
@@ -174,13 +184,5 @@ li {
 
     th:first-child:not(:only-of-type) {
         font: var(--mat-sys-title-medium);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    ::view-transition-group(*),
-    ::view-transition-old(*),
-    ::view-transition-new(*) {
-        animation-duration: 0s;
     }
 }

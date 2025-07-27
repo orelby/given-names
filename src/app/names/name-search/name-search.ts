@@ -17,9 +17,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
 import { ScrollPositionStore } from 'src/app/core/scrolling/scroll-position-store';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { NameSuggestionService } from '../name-suggestion-service';
-import { NameRepository } from '../data-access/name-repository';
+import { NameSearchService, SearchOptions } from '../name-search-service';
 
+const DEFAULT_MIN_POPULATION = 100;
+const DEFAULT_SOUNDEX_MODE: SearchOptions['soundexMode'] = 'exact';
 
 @Component({
     selector: 'app-name-search',
@@ -35,70 +36,50 @@ import { NameRepository } from '../data-access/name-repository';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NameSearch implements AfterViewInit {
-    protected readonly itemSize = 70;
-
     private readonly router = inject(Router);
 
-    private readonly namSuggestionService = inject(NameSuggestionService);
-
-    private readonly names = toSignal(inject(NameRepository).getAllByName());
+    private readonly nameSearchService = inject(NameSearchService);
 
     protected readonly nameControl = new FormControl('');
 
-    protected readonly query = signal('');
+    protected readonly $query = signal('');
 
     protected readonly $results = resource({
         params: () => ({
-            name: this.query(),
-            names: this.names(),
-            populationThreshold: this.populationThreshold(),
-            matchType: this.matchType(),
+            query: this.$query(),
+            minPopulation: this.$minPopulation(),
+            searchMethod: this.$searchMethod(),
+            soundexSearchMethod: this.$soundexSearchMethod(),
         }),
 
-        loader: async ({ params }) => {
-            const names = params.names;
-            if (!names) return [];
-            // delete this            
-            return await firstValueFrom(forkJoin([
-                this.namSuggestionService.suggestSimilarNames(params.name, Infinity).pipe(
-                    map(results => results.filter(result =>
-                        names.get(result)!.reduce(
-                            (acc, cur) => acc + cur.total, 0
-                        ) >= params.populationThreshold
-                    ))
-                ),
-                timer(200),
-            ]).pipe(map(([data, _]) => data)));
+        loader: async ({ params, abortSignal }) => {
+            if (params.query.length < 1) return [];
+
+            return firstValueFrom(
+                this.nameSearchService.search(params.query, {
+                    maxResults: Infinity,
+                    minPopulation: params.minPopulation,
+                    mode: params.searchMethod,
+                    soundexMode: params.soundexSearchMethod,
+                    abortSignal,
+                })
+            );
         },
     });
-
-    protected readonly pageSizeOptions = [10, 20, 50, 100];
-
-    protected readonly $pageIndex = signal(0);
-
-    protected readonly $pageSize = signal(10);
 
     protected readonly $length = computed(
         () => this.$results.value()?.length ?? 0
     );
 
-    protected readonly populationThresholdOptions = [5, 10, 50, 100, 1000];
+    protected readonly itemSize = 70;
 
-    protected readonly matchTypeOptions = [
-        { slug: 'soundex-full', text: 'שמות דומים' },
-        { slug: 'exact-infix', text: 'חיפוש מדויק' },
-        { slug: 'soundex-prefix', text: 'שמות דומים (תחילית)' },
-        { slug: 'exact-prefix', text: 'חיפוש מדויק (תחילית)' },
-    ];
+    protected readonly minPopulationOptions = [5, 10, 50, 100, 1000];
 
-    protected readonly matchTypeSlug = signal('soundex-full');
+    protected readonly $minPopulation = signal(DEFAULT_MIN_POPULATION);
 
-    protected readonly matchType = computed(() => {
-        const slug = this.matchTypeSlug();
-        return this.matchTypeOptions.find(option => option.slug === slug)!;
-    });
+    protected readonly $searchMethod = signal<'soundex' | 'phrase'>('soundex');
 
-    protected readonly populationThreshold = signal(100);
+    protected readonly $soundexSearchMethod = signal(DEFAULT_SOUNDEX_MODE);
 
     private readonly scrollPositionStore = inject(ScrollPositionStore);
 
@@ -114,11 +95,11 @@ export class NameSearch implements AfterViewInit {
 
         const name = params.get('query') ?? '';
         this.nameControl.setValue(name);
-        this.query.set(name);
+        this.$query.set(name);
 
-        const populationThreshold = parseInt(params.get('populationThreshold') ?? '');
-        if (this.populationThresholdOptions.includes(populationThreshold)) {
-            this.populationThreshold.set(populationThreshold);
+        const populationThreshold = parseInt(params.get('minPopulation') ?? '');
+        if (this.minPopulationOptions.includes(populationThreshold)) {
+            this.$minPopulation.set(populationThreshold);
         }
 
         const cachedIndex = this.scrollPositionStore.get(this.router.url);
@@ -141,12 +122,29 @@ export class NameSearch implements AfterViewInit {
         });
 
         effect(() => {
+            const params: Record<string, string | number> = {};
+
+            const query = this.$query();
+            if (query.length > 0) {
+                params['query'] = query;
+            }
+
+            const minPopulation = this.$minPopulation();
+            if (minPopulation !== DEFAULT_MIN_POPULATION) {
+                params['minPopulation'] = minPopulation;
+            }
+
+            const mode = this.$searchMethod();
+            const soundexMode = this.$soundexSearchMethod();
+            if (mode === 'phrase') {
+                params['mode'] = mode;
+            } else if (soundexMode !== DEFAULT_SOUNDEX_MODE) {
+                params['mode'] = `${mode}-${soundexMode}`;
+            }
+
             this.router.navigate([], {
-                queryParams: {
-                    'query': this.query(),
-                    'populationThreshold': this.populationThreshold(),
-                },
-                queryParamsHandling: 'merge'
+                queryParams: params,
+                queryParamsHandling: 'replace',
             });
         });
     }
@@ -156,7 +154,7 @@ export class NameSearch implements AfterViewInit {
     }
 
     search(): void {
-        this.query.set(this.nameControl.value || '');
+        this.$query.set(this.nameControl.value || '');
     }
 
     protected onScrollIndexChange(index: number): void {

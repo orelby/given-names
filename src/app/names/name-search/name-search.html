@@ -3,35 +3,40 @@
         <h1 class="visually-hidden">חיפוש שמות</h1>
 
         <form class="search-form" (ngSubmit)="search()">
-            <mat-form-field subscriptSizing="dynamic" appearance="outline" class="search-input">
-                <mat-label>שם לחיפוש</mat-label>
+            <mat-button-toggle-group class="search-method-tabs" aria-label="סוג החיפוש"
+                hideSingleSelectionIndicator [(value)]="$searchMethod">
+                <mat-button-toggle value="soundex">חיפוש שמות דומים</mat-button-toggle>
+                <mat-button-toggle value="phrase">חיפוש מדויק</mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <mat-form-field class="search-input" subscriptSizing="dynamic" appearance="outline"
+                aria-label="שם לחיפוש">
                 <mat-icon fontIcon="search" matPrefix></mat-icon>
-                <input #inputElement type="text" matInput [formControl]="nameControl"
-                    (focus)="inputElement.select()">
+                <input #inputElement type="text" placeholder="שם לחיפוש..." matInput
+                    [formControl]="nameControl" (focus)="inputElement.select()">
             </mat-form-field>
 
             <div style="display: flex; align-items: center; gap: 1ch;">
                 <span style="margin-inline-end: auto;">
-                    {{ $results.hasValue() ? `${$results.value().length | number} תוצאות` : '' }}
+                    {{ $results.hasValue() && $query().length > 0 ? `${$results.value().length | number} תוצאות` : '' }}
                 </span>
 
                 <mat-icon role="presentation" fontIcon="filter_list"></mat-icon>
 
+                @if ($searchMethod() === 'soundex') {
                 <mat-form-field subscriptSizing="dynamic" appearance="outline" class="select-input">
-                    <mat-select [(value)]="matchTypeSlug">
-                        <mat-select-trigger>{{matchType().text}}
-                        </mat-select-trigger>
-                        @for (option of matchTypeOptions; track option) {
-                        <mat-option [value]="option.slug">{{option.text}}</mat-option>
-                        }
+                    <mat-select [(value)]="$soundexSearchMethod">
+                        <mat-option value="exact">התאמה מלאה</mat-option>
+                        <mat-option value="prefix">התאמת תחילית</mat-option>
                     </mat-select>
                 </mat-form-field>
+                }
 
                 <mat-form-field subscriptSizing="dynamic" appearance="outline" class="select-input">
-                    <mat-select [(value)]="populationThreshold">
-                        <mat-select-trigger>לפחות {{populationThreshold()}} אנשים
-                        </mat-select-trigger>
-                        @for (option of populationThresholdOptions; track option) {
+                    <mat-select [(value)]="$minPopulation">
+                        <mat-select-trigger>לפחות {{$minPopulation() | number}}
+                            אנשים</mat-select-trigger>
+                        @for (option of minPopulationOptions; track option) {
                         <mat-option [value]="option">{{option}}</mat-option>
                         }
                     </mat-select>
@@ -62,7 +67,7 @@
 
 <ng-template #resultTemplate let-result>
     <div class="result">
-        <a class="result-link" routerLink="/name/{{result}}" matRipple>
+        <a class="result-link" [routerLink]="['/name', result]" matRipple>
             <h2>{{ result }}</h2>
             <mat-icon class="arrow-icon mat-icon-rtl-mirror" aria-hidden="true"
                 fontIcon="chevron_right" aria-hidden="true"></mat-icon>

@@ -11,7 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatListItem, MatNavList } from '@angular/material/list';
 import { BreakpointService } from '../core/breakpoints/breakpoint-service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NameSuggestionService } from '../names/name-suggestion-service';
+import { NameSearchService } from '../names/name-search-service';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
@@ -54,7 +54,7 @@ export class Header {
   protected readonly $isAutocompleteOpen = signal(false);
 
   readonly #autocompleteOptions = toSignal(
-    inject(NameSuggestionService).suggestSimilarNamesForObservable(
+    inject(NameSearchService).search$(
       this.searchFormControl.valueChanges
     ),
     { initialValue: [] }

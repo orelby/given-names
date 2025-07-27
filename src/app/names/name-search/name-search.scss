@@ -8,13 +8,19 @@
 
 :host::ng-deep {
     .search-input {
-        @include mat.form-field-density(0);
+        // --mat-form-field-outlined-container-shape: var(--mat-sys-corner-large);
         margin-block-end: 1rem;
+
+        @include mat.form-field-density(0);
 
         &,
         .mat-mdc-form-field-infix {
             width: 100%;
         }
+
+        // .mdc-notched-outline__leading {
+        //     border-start-start-radius: 0;
+        // }
     }
 
     .select-input {
@@ -33,6 +39,13 @@
             margin-inline-end: 1ch;
         }
     }
+}
+
+.search-method-tabs {
+    border-radius: var(--mat-sys-corner-large);
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    border-bottom: 0;
 }
 
 .results {

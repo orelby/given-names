@@ -108,8 +108,8 @@ export class DemographicsPage {
 
     const decileEnd = 9;
 
-    let decileThresholds = groupStats.quantileThresholds.slice(0, decileEnd);
-    let topPercentilesThresholds = groupStats.quantileThresholds.slice(decileEnd);
+    const decileThresholds = groupStats.quantileThresholds.slice(0, decileEnd);
+    const topPercentilesThresholds = groupStats.quantileThresholds.slice(decileEnd);
 
     const deciles = decileThresholds.map((ceiling, i) => ({
       index: 1 + i,

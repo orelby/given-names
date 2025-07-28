@@ -1,5 +1,3 @@
-import { YearPeriod } from "./year-periods";
-
 /**
  * Bitmask of at least one gender and one religion.
  */

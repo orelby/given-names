@@ -1,8 +1,12 @@
-import { DemographicGroupStats } from "./demographic-group-stats";
 import { Gender, Religion } from "../demographics";
 import { YearPeriod } from "../year-periods";
 
-export interface PeriodStats {
+export interface AllPeriodStats {
+    quantileLabels: readonly QuantileLabel[];
+    periods: readonly SinglePeriodStats[];
+}
+
+export interface SinglePeriodStats {
     yearPeriod: YearPeriod,
     byReligionAndGender: Record<
         Religion['slug'],
@@ -10,11 +14,22 @@ export interface PeriodStats {
     >;
 }
 
-export interface AllPeriodStats {
-    quantileLabels: readonly QuantileLabel[];
-    periods: readonly PeriodStats[];
+export interface DemographicGroupStats {
+    nameTotal: number;
+    populationTotal: number;
+    quantileThresholds: number[];
+    quantileTotals: number[];
+    topNames: NameEntry[];
+    peakNames?: NameEntry[];
+    entries?: NameEntry[];
 }
 
+export interface NameEntry {
+    name: string;
+    total: number;
+}
+
+// TODO: delete
 export interface QuantileLabel {
     readonly type: 'decile' | 'percentile',
     readonly value: number

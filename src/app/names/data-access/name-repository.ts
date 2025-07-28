@@ -1,5 +1,5 @@
 import { fromPromise } from "rxjs/internal/observable/innerFrom";
-import { map, Observable, shareReplay, switchMap, tap } from "rxjs";
+import { map, Observable, shareReplay, switchMap } from "rxjs";
 import { inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
 import { HttpClient } from '@angular/common/http';

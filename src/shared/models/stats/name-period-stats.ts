@@ -1,14 +1,13 @@
 import { ReadonlyNameCounts } from "./name-counts";
 import { Demographic, DemographicGroup, Gender, GenderBitmasks, genders, Religion, ReligionBitmasks, religions } from '../demographics';
-import { PeriodStats, QuantileLabel } from "./period-stats";
-import { DemographicGroupStats } from "./demographic-group-stats";
+import { SinglePeriodStats, QuantileLabel, DemographicGroupStats } from "./period-stats";
 
 export class NamePeriodStats {
     private stats: Record<DemographicGroup, NameDemographicGroupStats> = {};
 
     constructor(
         nameCounts: ReadonlyNameCounts,
-        periodStats: PeriodStats,
+        periodStats: SinglePeriodStats,
         quantileLabels: readonly QuantileLabel[],
     ) {
         for (const religion of religions) {

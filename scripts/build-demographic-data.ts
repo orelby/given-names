@@ -7,9 +7,9 @@ import { readFileSync, writeFileSync } from 'fs';
 import { NameCsvRepository } from './../src/app/names/data-access/name-csv-repository';
 import { environment } from './../src/environments/environment';
 import { getTotalByYearPeriod, NameRecord } from '@shared/models/name-records';
-import { SingleDemographic, religions, genders } from '@shared/models/demographics';
-import { YearPeriod, YEAR_PERIODS } from '@shared/models/year-periods';
-import { AllPeriodStats, PeriodStats, QuantileLabel } from '@shared/models/stats/period-stats';
+import { DemographicGroup, religions, genders } from '@shared/models/demographics';
+import { YearPeriod, YEAR_PERIODS, GENERATIONS } from '@shared/models/year-periods';
+import { AllPeriodStats, SinglePeriodStats, QuantileLabel, NameEntry, DemographicGroupStats } from '@shared/models/stats/period-stats';
 
 
 const dataPath = `./public/${environment.dataPath}`;
@@ -17,13 +17,8 @@ const repo = new NameCsvRepository();
 const csvText = readFileSync(`${dataPath}/given-names.csv`, 'utf-8');
 repo.loadFromCsv(csvText);
 
-interface Entry {
-  name: string;
-  total: number;
-}
-
-interface DemographicEntry extends Entry {
-  demographic: SingleDemographic;
+interface DemographicEntry extends NameEntry {
+  demographic: DemographicGroup;
 }
 
 const quantileFractions = [
@@ -50,13 +45,13 @@ function lastIdxOfQuantile(fraction: number, length: number) {
 }
 
 // Simple "higher" interpolation quantile threshold
-function computeQuantileThresholds(sortedValues: Entry[], fractions: number[]): number[] {
+function computeQuantileThresholds(sortedValues: NameEntry[], fractions: number[]): number[] {
   return fractions.map(f =>
     sortedValues[lastIdxOfQuantile(f, sortedValues.length)].total
   );
 }
 
-function computeQuantileTotals(sortedValues: Entry[], fractions: number[]): number[] {
+function computeQuantileTotals(sortedValues: NameEntry[], fractions: number[]): number[] {
   const totals = fractions.map(() => 0);
 
   let curIdx = 0;
@@ -89,11 +84,11 @@ function buildEntries(
   byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>,
   yearPeriod: YearPeriod
 ) {
-  const entriesByDemographic = new Map<SingleDemographic, Entry[]>();
+  const entriesByDemographic = new Map<DemographicGroup, NameEntry[]>();
   const entriesGroupedByName: DemographicEntry[][] = [];
 
   for (const [name, records] of byName.entries()) {
-    const entries = [] as DemographicEntry[];
+    const entries: DemographicEntry[] = [];
 
     for (const record of records) {
       const key = record.demographic;
@@ -115,14 +110,14 @@ function buildEntries(
   return { entriesByDemographic, entriesGroupedByName };
 }
 
-function sortEntries(entries: Entry[]) {
+function sortEntries(entries: NameEntry[]) {
   return entries.sort((a, b) => a.total - b.total);
 }
 
 function collectEntries(
   entriesGroupedByName: DemographicEntry[][],
   demographicBitmask: number
-): Entry[] {
+): NameEntry[] {
   return entriesGroupedByName.reduce(
     (acc, entries) => {
       const value = getValueFromEntries(entries, demographicBitmask);
@@ -131,14 +126,14 @@ function collectEntries(
       };
       return acc;
     },
-    [] as Entry[]
+    [] as NameEntry[]
   );
 }
 
 function buildDemographicData(
   byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>,
   yearPeriod: YearPeriod
-): PeriodStats {
+): SinglePeriodStats {
 
   const { entriesByDemographic, entriesGroupedByName } = measure(
     () => buildEntries(byName, yearPeriod),
@@ -146,7 +141,7 @@ function buildDemographicData(
     2
   );
 
-  const byReligionAndGender = {} as PeriodStats['byReligionAndGender'];
+  const byReligionAndGender = {} as SinglePeriodStats['byReligionAndGender'];
 
   for (const religion of religions) {
     byReligionAndGender[religion.slug] = Object.fromEntries(
@@ -185,9 +180,10 @@ function buildDemographicData(
       );
 
       const topNameCount = (
-        entries.length > 1000
-        && quantileThresholds[quantileThresholds.length - 2] > 100
+        entries.length > 100
+        && entries.at(-20)!.total >= 50
       ) ? 20 : 10;
+
       const topNames = entries.slice(-topNameCount).reverse();
 
 
@@ -197,29 +193,34 @@ function buildDemographicData(
         quantileThresholds,
         quantileTotals,
         topNames,
+        entries: isGeneration(yearPeriod) ? entries : undefined,
       };
     }
   }
 
-  const result = {
+  const result: SinglePeriodStats = {
     yearPeriod,
     byReligionAndGender,
-  } as PeriodStats;
+  };
 
   return result;
 }
 
-
 const MAX_LOG_VERBOSITY = 0;
 
-function measure<T>(cb: () => T, label: string, verbosity: number = 0): T {
+function measure<ReturnType>(
+  cb: () => ReturnType,
+  label: string,
+  verbosity: number = 0
+): ReturnType {
   // if (global.gc) {
   //   global.gc();
   // } else {
   //   console.warn("Garbage collection not exposed. Launch Node.js with --expose-gc flag.");
   // }
 
-  let res: T;
+  let res: ReturnType;
+
   if (verbosity <= MAX_LOG_VERBOSITY) {
     const timeStart = performance.now();
     res = cb();
@@ -228,6 +229,7 @@ function measure<T>(cb: () => T, label: string, verbosity: number = 0): T {
   } else {
     res = cb();
   }
+
   return res;
 }
 
@@ -238,12 +240,17 @@ const periodsData = YEAR_PERIODS.map(period => {
     () => buildDemographicData(nameRecordsGroupedByName, period),
     `Built demographic stats for ${period.start}-${period.end} in`
   );
-})
+});
 
-const stats = {
+const periodsStats = measure(
+  () => buildPeriodPeakNames(periodsData),
+  `Built period peak stats in`
+);
+
+const stats: AllPeriodStats = {
   quantileLabels,
-  periods: periodsData,
-} as AllPeriodStats;
+  periods: periodsStats,
+};
 
 const savePath = `${dataPath}/demographic-stats.json`;
 
@@ -254,3 +261,80 @@ writeFileSync(
   JSON.stringify(stats),
   'utf8'
 );
+
+interface GenEntry {
+  fraction: number;
+  genGroup: DemographicGroupStats;
+}
+
+function isGeneration(period: YearPeriod) {
+  return GENERATIONS.some(g => period.start === g.start && period.end === g.end);
+}
+
+function buildPeriodPeakNames(periodsData: SinglePeriodStats[]): SinglePeriodStats[] {
+  // Cleanup
+
+  const minPeakTotal = 50;
+  const minPeakFraction = 0.00_001;
+
+  const generationsData = periodsData.filter(p => isGeneration(p.yearPeriod));
+
+  for (const religion of religions) {
+    for (const gender of genders) {
+      const peakGenByName = new Map<string, GenEntry>();
+
+      for (const genData of generationsData) {
+        const genGroupData = genData.byReligionAndGender[religion.slug][gender.slug];
+
+        for (const entry of genGroupData.entries!) {
+          const curPeak = peakGenByName.get(entry.name);
+
+          if (entry.total < minPeakTotal) continue;
+
+          const fraction = entry.total / genGroupData.populationTotal;
+
+          if (fraction < minPeakFraction || (
+            curPeak && curPeak.fraction > fraction
+          )) {
+            continue;
+          }
+
+
+          peakGenByName.set(entry.name, {
+            fraction,
+            genGroup: genGroupData
+          });
+        }
+
+        genGroupData.entries = undefined;
+      }
+
+      const namesByGen = Map.groupBy(
+        peakGenByName.keys(),
+        name => peakGenByName.get(name)!.genGroup
+      );
+
+      for (const [genGroup, names] of namesByGen.entries()) {
+        names.sort((a, b) => (
+          peakGenByName.get(a)!.fraction
+          - peakGenByName.get(b)!.fraction)
+        );
+
+        const peakNameCount = names.length >= 20 ? 20 : 10;
+
+        genGroup.peakNames = names
+          .slice(-peakNameCount)
+          .reverse()
+          .map(name => ({
+            name,
+            total: Math.round(
+              peakGenByName.get(name)!.fraction
+              * genGroup.populationTotal
+            )
+          }));
+      }
+    }
+  }
+
+  return periodsData;
+}

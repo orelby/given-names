@@ -73,8 +73,14 @@ mat-option {
     margin: 0 auto;
 }
 
-h1 span {
-    white-space: nowrap;
+h1 {
+    & {
+        margin-block-start: 0;
+    }
+
+    span {
+        white-space: nowrap;
+    }
 }
 
 .basic-summary {

@@ -35,7 +35,7 @@
 <main [style.--color]="`var(--gender-background-${gender.slug})`">
 
     <h1>
-        <span>שמות ישראל: </span><wbr>
+        <!-- <span>שמות ישראל: </span><wbr> -->
         <span>{{$demographicTitle() ? `${$demographicTitle()} – ` : ''}}</span><wbr>
         <span dir="rtl">{{$period().description}}</span><wbr>
         <span dir="rtl"> ({{$period() | yearPeriod }})</span>
@@ -55,8 +55,23 @@
             }} אנשים לשם</mat-chip>
     </mat-chip-set>
 
+    @if (groupStats.peakNames) {
+    <article class="peak-names">
+        <h2>השמות של הדור</h2>
+        <p>השמות המובילים שהגיעו לשיאם ב{{$period().description}} כאחוז מקבוצת האוכלוסייה ביחס לשאר
+            הדורות.</p>
+        <app-chart mode="bar-list">
+            <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
+            <app-chart-data-axis label="שם" [data]="groupStats.peakNames"
+                key="name"></app-chart-data-axis>
+            <app-chart-dataset label="אוכלוסייה" [data]="groupStats.peakNames"
+                key="total"></app-chart-dataset>
+        </app-chart>
+    </article>
+    }
+
     <article class="top-names">
-        <h2>{{groupStats.topNames.length}} השמות הכי פופולריים</h2>
+        <h2>השמות הכי פופולריים</h2>
         <app-chart mode="bar-list">
             <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
             <app-chart-data-axis label="שם" [data]="groupStats.topNames"

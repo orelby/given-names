@@ -51,7 +51,6 @@ $search-placeholder-inline-size: 15ch;
     align-items: center;
     color: inherit;
     background: inherit;
-    view-transition-name: navbar;
 }
 
 .app-logo {
@@ -124,35 +123,32 @@ $search-placeholder-inline-size: 15ch;
 /************  View Transitions  ***********/
 
 @media (prefers-reduced-motion: no-preference) {
-    .menu-toggle-icon {
-        view-transition-name: menu-toggle;
-    }
-
-    .search-form {
-        view-transition-name: navbar-search;
-        view-transition-class: navbar-search;
-    }
-
-    .search-input {
-        view-transition-name: navbar-search-input;
-        view-transition-class: navbar-search;
-    }
-
-    .search-icon,
-    .open-search {
-        view-transition-name: navbar-search-icon;
-        view-transition-class: navbar-search;
-    }
-
     .navbar--with-search-opening,
     .navbar--with-search-closing {
-        .search-input {
-            width: $search-placeholder-inline-size;
+        & {
+            view-transition-name: navbar;
         }
 
-        .menu-toggle-icon {
-            view-transition-name: unset;
+        .search-form {
+            view-transition-name: navbar-search;
+            view-transition-class: navbar-search;
         }
+
+        .search-input {
+            width: $search-placeholder-inline-size;
+            view-transition-name: navbar-search-input;
+            view-transition-class: navbar-search;
+        }
+
+        .search-icon,
+        .open-search {
+            view-transition-name: navbar-search-icon;
+            view-transition-class: navbar-search;
+        }
+    }
+
+    .menu-toggle:focus .mat-icon {
+        view-transition-name: menu-toggle;
     }
 }
 

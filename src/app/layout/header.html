@@ -4,12 +4,11 @@
 <header class="navbar" [class.navbar--with-search-open]="isSearchOpen"
     [class.navbar--with-drawer-open]="isDrawerOpen" #navbar>
 
-    <button mat-icon-button class="show-mobile"
+    <button mat-icon-button class="show-mobile menu-toggle"
         (click)="isDrawerOpen ? closeDrawer() : openDrawer()"
         [ariaLabel]="isDrawerOpen ? `סגירת התפריט` : `פתיחת התפריט`"
         [ariaExpanded]="isDrawerOpen ? 'true' : 'false'" tabindex="2">
-        <mat-icon class="menu-toggle-icon" [fontIcon]="isDrawerOpen ? 'close' : 'menu'"
-            aria-hidden="true"></mat-icon>
+        <mat-icon [fontIcon]="isDrawerOpen ? 'close' : 'menu'" aria-hidden="true"></mat-icon>
     </button>
 
     <a tabindex="1" mat-button class="app-logo" routerLink="/">שמות ישראל</a>

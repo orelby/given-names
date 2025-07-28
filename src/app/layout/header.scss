@@ -253,7 +253,7 @@ $search-placeholder-inline-size: 15ch;
 
 :host.has-drawer-open {
     & {
-        z-index: 500;
+        z-index: 600;
         position: sticky;
         top: 0;
     }
@@ -269,5 +269,9 @@ $search-placeholder-inline-size: 15ch;
         z-index: 400;
         opacity: 1;
         pointer-events: auto;
+    }
+
+    .navbar {
+        z-index: 600;
     }
 }

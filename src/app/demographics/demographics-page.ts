@@ -30,9 +30,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DemographicsPage {
-  protected router = inject(Router);
+  private readonly router = inject(Router);
 
-  protected $queryParams = toSignal(inject(ActivatedRoute).queryParamMap);
+  private readonly $queryParams = toSignal(inject(ActivatedRoute).queryParamMap);
 
   protected readonly $religion = computed(() => {
     const slug = this.$queryParams()?.get('religion');

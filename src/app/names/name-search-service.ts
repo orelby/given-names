@@ -9,20 +9,26 @@ import { environment } from '../../environments/environment';
 import { distance } from 'fastest-levenshtein';
 import { NameRepository } from './data-access/name-repository';
 
-interface SoundexCodebook {
-  readonly codes: readonly string[];
-  readonly nameLists: readonly string[];
-};
+export const SEARCH_MODES = ['soundex', 'phrase'] as const;
+
+export const SOUNDEX_SEARCH_MODES = ['exact', 'prefix'] as const;
+
+export type SearchMode = typeof SEARCH_MODES[number];
+
+export type SoundexSearchMode = typeof SOUNDEX_SEARCH_MODES[number];
 
 export interface SearchOptions {
-  mode?: 'soundex' | 'phrase';
+  mode?: SearchMode;
   soundexMode?: SoundexSearchMode;
   maxResults?: number;
   minPopulation?: number;
   abortSignal?: AbortSignal;
 }
 
-export type SoundexSearchMode = 'exact' | 'prefix';
+interface SoundexCodebook {
+  readonly codes: readonly string[];
+  readonly nameLists: readonly string[];
+};
 
 @Injectable({
   providedIn: 'root'

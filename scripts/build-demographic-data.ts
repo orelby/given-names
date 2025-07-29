@@ -84,7 +84,7 @@ function buildEntries(
   byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>,
   yearPeriod: YearPeriod
 ) {
-  const entriesByDemographic = new Map<DemographicGroup, NameEntry[]>();
+  const entriesByDemographic = new Map<DemographicGroup, DemographicEntry[]>();
   const entriesGroupedByName: DemographicEntry[][] = [];
 
   for (const [name, records] of byName.entries()) {
@@ -184,8 +184,8 @@ function buildDemographicData(
         && entries.at(-20)!.total >= 50
       ) ? 20 : 10;
 
-      const topNames = entries.slice(-topNameCount).reverse();
-
+      const topNames = entries.slice(-topNameCount).reverse()
+        .map(({ name, total }) => ({ name, total }));
 
       byReligionAndGender[religion.slug][gender.slug] = {
         nameTotal: entries.length,
@@ -235,17 +235,19 @@ function measure<ReturnType>(
 
 const nameRecordsGroupedByName = repo.getAllByName();
 
-const periodsData = YEAR_PERIODS.map(period => {
+const periodsStats = YEAR_PERIODS.map(period => {
   return measure(
     () => buildDemographicData(nameRecordsGroupedByName, period),
     `Built demographic stats for ${period.start}-${period.end} in`
   );
 });
 
-const periodsStats = measure(
-  () => buildPeriodPeakNames(periodsData),
+measure(
+  () => withPeriodPeakNames(periodsStats),
   `Built period peak stats in`
 );
+
+withoutEntries(periodsStats);
 
 const stats: AllPeriodStats = {
   quantileLabels,
@@ -262,79 +264,99 @@ writeFileSync(
   'utf8'
 );
 
-interface GenEntry {
+interface GroupEntry {
   fraction: number;
-  genGroup: DemographicGroupStats;
+  groupStats: DemographicGroupStats;
 }
 
 function isGeneration(period: YearPeriod) {
   return GENERATIONS.some(g => period.start === g.start && period.end === g.end);
 }
 
-function buildPeriodPeakNames(periodsData: SinglePeriodStats[]): SinglePeriodStats[] {
-  // Cleanup
+function withoutEntries(periodsStats: SinglePeriodStats[]): void {
+  for (const periodStats of periodsStats) {
+    for (const religion of religions) {
+      for (const gender of genders) {
 
-  const minPeakTotal = 50;
-  const minPeakFraction = 0.00_001;
+        const groupStats = periodStats
+          .byReligionAndGender[religion.slug][gender.slug];
 
-  const generationsData = periodsData.filter(p => isGeneration(p.yearPeriod));
-
-  for (const religion of religions) {
-    for (const gender of genders) {
-      const peakGenByName = new Map<string, GenEntry>();
-
-      for (const genData of generationsData) {
-        const genGroupData = genData.byReligionAndGender[religion.slug][gender.slug];
-
-        for (const entry of genGroupData.entries!) {
-          const curPeak = peakGenByName.get(entry.name);
-
-          if (entry.total < minPeakTotal) continue;
-
-          const fraction = entry.total / genGroupData.populationTotal;
-
-          if (fraction < minPeakFraction || (
-            curPeak && curPeak.fraction > fraction
-          )) {
-            continue;
-          }
-
-
-          peakGenByName.set(entry.name, {
-            fraction,
-            genGroup: genGroupData
-          });
-        }
-
-        genGroupData.entries = undefined;
-      }
-
-      const namesByGen = Map.groupBy(
-        peakGenByName.keys(),
-        name => peakGenByName.get(name)!.genGroup
-      );
-
-      for (const [genGroup, names] of namesByGen.entries()) {
-        names.sort((a, b) => (
-          peakGenByName.get(a)!.fraction
-          - peakGenByName.get(b)!.fraction)
-        );
-
-        const peakNameCount = names.length >= 20 ? 20 : 10;
-
-        genGroup.peakNames = names
-          .slice(-peakNameCount)
-          .reverse()
-          .map(name => ({
-            name,
-            total: Math.round(
-              peakGenByName.get(name)!.fraction
-              * genGroup.populationTotal
-            )
-          }));
+        groupStats.entries = undefined;
       }
     }
   }
+}
 
-  return periodsData;
+function withPeriodPeakNames(periodsData: SinglePeriodStats[]): void {
+  const allGenStats = periodsData.filter(p => isGeneration(p.yearPeriod));
+
+  for (const religion of religions) {
+    for (const gender of genders) {
+      const peakGenByName = new Map<string, GroupEntry>();
+
+      for (const genStats of allGenStats) {
+
+        const groupStats = genStats
+          .byReligionAndGender[religion.slug][gender.slug];
+
+        collectCandidatePeriodNames(groupStats, peakGenByName);
+
+      }
+
+      processCandidatePeriodPeakNames(peakGenByName);
+    }
+  }
+}
+
+function collectCandidatePeriodNames(
+  groupStats: DemographicGroupStats,
+  peakPeriodByName: Map<string, GroupEntry>,
+  minPeakTotal = 50,
+  minPeakFraction = 0.00_001,
+): void {
+  for (const entry of groupStats.entries!) {
+    const curPeak = peakPeriodByName.get(entry.name);
+
+    if (entry.total < minPeakTotal) {
+      continue;
+    }
+
+    const fraction = entry.total / groupStats.populationTotal;
+
+    if (fraction < minPeakFraction
+      || (curPeak && curPeak.fraction > fraction)) {
+      continue;
+    }
+
+    peakPeriodByName.set(entry.name, { fraction, groupStats });
+  }
+}
+
+function processCandidatePeriodPeakNames(
+  peakPeriodByName: ReadonlyMap<string, GroupEntry>
+): void {
+  const namesByPeriod = Map.groupBy(
+    peakPeriodByName.keys(),
+    name => peakPeriodByName.get(name)!.groupStats
+  );
+
+  for (const [periodGroup, names] of namesByPeriod.entries()) {
+    names.sort((a, b) => (
+      peakPeriodByName.get(a)!.fraction
+      - peakPeriodByName.get(b)!.fraction)
+    );
+
+    const peakNameCount = names.length >= 20 ? 20 : 10;
+
+    periodGroup.peakNames = names
+      .slice(-peakNameCount)
+      .reverse()
+      .map(name => ({
+        name,
+        total: Math.round(
+          peakPeriodByName.get(name)!.fraction
+          * periodGroup.populationTotal
+        )
+      }));
+  }
 }

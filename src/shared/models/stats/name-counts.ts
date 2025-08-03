@@ -10,7 +10,7 @@ export class NameCounts implements ReadonlyNameCounts {
             )
         )));
 
-    private readonly totalsByReligionAndGender: Record<DemographicGroup, number> =
+    protected readonly totalsByReligionAndGender: Record<DemographicGroup, number> =
         Object.assign({}, NameCounts.base);
 
     withRecords(
@@ -90,16 +90,56 @@ export class NameCounts implements ReadonlyNameCounts {
         ];
     }
 
-    getGenderRatioOfReligion(religion: Religion): number | undefined {
-        const totalWomen = this.totalsByReligionAndGender[
-            religion.bitmask | GenderBitmasks.Women
+    getReligionRatio(religion: Religion, gender?: Gender): number | undefined {
+        const genderBitmask = gender ? gender.bitmask : GenderBitmasks.All;
+
+        const totalReligion = this.totalsByReligionAndGender[
+            religion.bitmask | genderBitmask
         ];
 
         const totalAll = this.totalsByReligionAndGender[
-            religion.bitmask | GenderBitmasks.All
+            ReligionBitmasks.All | genderBitmask
+        ];
+
+        return totalAll === 0 ? undefined : totalReligion / totalAll;
+    }
+
+    getGenderRatio(religion?: Religion): number | undefined {
+        const religionBitmask = religion ? religion.bitmask : ReligionBitmasks.All;
+
+        const totalWomen = this.totalsByReligionAndGender[
+            religionBitmask | GenderBitmasks.Women
+        ];
+
+        const totalAll = this.totalsByReligionAndGender[
+            religionBitmask | GenderBitmasks.All
         ];
 
         return totalAll === 0 ? undefined : totalWomen / totalAll;
+    }
+}
+
+export class SingleNameCounts extends NameCounts {
+    constructor(public readonly name: string) {
+        super();
+    }
+
+    override withRecords(
+        records: readonly NameCountsRecord[],
+        period: YearPeriod = FULL_DATA_PERIOD
+    ): this {
+        const totals = this.totalsByReligionAndGender;
+
+        for (const record of records) {
+            const total = getTotalByYearPeriod(record, period);
+            const dem = record.demographic;
+            totals[dem] += total;
+            totals[dem | GenderBitmasks.All] += total;
+            totals[dem | ReligionBitmasks.All] += total;
+            totals[ReligionBitmasks.All | GenderBitmasks.All] += total;
+        }
+
+        return this;
     }
 }
 
@@ -114,5 +154,7 @@ export interface ReadonlyNameCounts {
 
     ofAll(): number;
 
-    getGenderRatioOfReligion(religion: Religion): number | undefined;
+    getReligionRatio(religion: Religion, gender?: Gender): number | undefined;
+
+    getGenderRatio(religion?: Religion): number | undefined;
 }

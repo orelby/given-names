@@ -78,6 +78,8 @@ $theme: mat.define-theme(
     height: 100%;
     padding: 0;
     margin: 0;
+    background-color: var(--mat-sys-background);
+    color: var(--mat-sys-on-background);
     font: var(--mat-sys-body-medium);
 
     /*

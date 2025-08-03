@@ -47,7 +47,7 @@
                 </mat-card-header>
                 <mat-card-content>
                     <div class="content-with-bar">
-                        @let genderRatio = stats.getGenderRatioOfReligion(religion);
+                        @let genderRatio = stats.getGenderRatio(religion);
                         @if (genderRatio === undefined) {
                         <div class="gender-bar gender-bar--empty"></div>
                         } @else {

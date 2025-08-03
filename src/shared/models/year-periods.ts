@@ -6,7 +6,7 @@ export interface YearPeriod {
     start: number;
     end: number;
     slug: string;
-    description: string;
+    description?: string;
 }
 
 export const FULL_DATA_PERIOD: YearPeriod = {
@@ -69,3 +69,18 @@ export const YEAR_PERIODS: readonly YearPeriod[] = [
     ...RECENT_YEAR_PERIODS,
     ...GENERATIONS
 ];
+
+export function previousYear(year: YearPeriod): YearPeriod | null {
+    if (year.start <= START_YEAR) {
+        return null;
+    }
+
+    const span = year.end - year.start + 1;
+    const start = year.start - span;
+    const end = year.end - span;
+    const slug = start === end
+        ? start.toFixed(0)
+        : `${start.toFixed(0)}-${end.toFixed(0)}`;
+
+    return { start, end, slug };
+}

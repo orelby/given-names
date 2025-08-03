@@ -11,13 +11,13 @@ export function buildStats(
 ) {
     let periodsStats = YEAR_PERIODS.map(period => {
         return withTiming(
-            () => buildPeriodStats(recordsByName, period),
+            () => buildPeriodStats(period, recordsByName),
             `Built stats for ${period.start}-${period.end} in`
         );
     });
 
     withTiming(
-        () => annotateWithNotableNames(periodsStats),
+        () => annotateWithNotableNames(periodsStats, recordsByName),
         `Built notable names for all periods`
     );
 

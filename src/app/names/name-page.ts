@@ -132,7 +132,7 @@ export class NamePage {
   });
 
   protected readonly $timeChartAxisData = computed(() =>
-    this.$timeChartPeriods().map(p => p.description)
+    this.$timeChartPeriods().map(p => p.description || p.slug)
   );
 
   protected readonly $timeChartPeriodNameStats = computed(() => {

@@ -8,8 +8,8 @@ import { buildEntries, collectEntries, sortEntries } from './demographic';
 import { computeQuantileTotals, getQuantileThresholds, quantileFractions } from './quantile';
 
 export function buildPeriodStats(
-    byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>,
-    yearPeriod: YearPeriod
+    yearPeriod: YearPeriod,
+    byName: ReadonlyMap<string, ReadonlyArray<NameRecord>>
 ): DetailedSinglePeriodStats {
     const entriesByDemographic = withTiming(
         () => buildEntries(byName, yearPeriod),
@@ -44,9 +44,9 @@ export function buildPeriodStats(
             const quantileThresholds = withTiming(
                 () => getQuantileThresholds(
                     groupNameCounts,
-                     quantileFractions, 
-                     demographicBitmask
-                    ),
+                    quantileFractions,
+                    demographicBitmask
+                ),
                 `buildPeriodStats[${religion.slug}][${gender.slug}]__computeQuantileThresholds`,
                 TimingVerbosity.MediumHigh
             );
@@ -54,9 +54,9 @@ export function buildPeriodStats(
             const quantileTotals = withTiming(
                 () => computeQuantileTotals(
                     groupNameCounts,
-                     quantileFractions,
-                      demographicBitmask
-                    ),
+                    quantileFractions,
+                    demographicBitmask
+                ),
                 `buildPeriodStats__[${religion.slug}][${gender.slug}]__computeQuantileTotals`,
                 TimingVerbosity.MediumHigh
             );
@@ -80,12 +80,12 @@ export function buildPeriodStats(
                 quantileThresholds,
                 quantileTotals,
                 topNames,
-                entries: isGeneration(yearPeriod) ? groupNameCounts : undefined,
+                entries: groupNameCounts,
             };
         }
     }
 
-    const result: SinglePeriodStats = {
+    const result: DetailedSinglePeriodStats = {
         yearPeriod,
         byReligionAndGender,
     };
@@ -95,6 +95,10 @@ export function buildPeriodStats(
 
 export function isGeneration(period: YearPeriod) {
     return GENERATIONS.some(g => period.start === g.start && period.end === g.end);
+}
+
+export function isYear(period: YearPeriod) {
+    return period.start === period.end;
 }
 
 export function stripDetailedEntries(
@@ -108,7 +112,7 @@ export function stripDetailedEntries(
 
             for (const gender of genders) {
                 const groupStats = byGender[gender.slug];
-                groupStats.entries = undefined;
+                (groupStats as any).entries = undefined;
                 groupStats.fractionByName = undefined;
                 groupStats.genderRatioByName = undefined;
                 groupStats.religionRatioByName = undefined;
@@ -128,7 +132,7 @@ export interface DetailedSinglePeriodStats {
 }
 
 export interface DetailedDemographicGroupStats extends DemographicGroupStats {
-    entries?: readonly SingleNameCounts[];
+    entries: readonly SingleNameCounts[];
     fractionByName?: ReadonlyMap<string, number>;
     genderRatioByName?: ReadonlyMap<string, number>;
     religionRatioByName?: ReadonlyMap<string, number>;

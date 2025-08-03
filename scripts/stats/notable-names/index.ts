@@ -1,8 +1,12 @@
 import {
     DemographicGroup, Gender, genders, Religion, religions
 } from "@shared/models/demographics";
-import { SinglePeriodStats } from "@shared/models/stats/period-stats";
-import { DetailedDemographicGroupStats, isGeneration } from "../period";
+import { NameRecord } from "@shared/models/name-records";
+import { previousYear } from "@shared/models/year-periods";
+import {
+    buildPeriodStats, isGeneration, isYear,
+    DetailedDemographicGroupStats, DetailedSinglePeriodStats,
+} from "../period";
 import { PeakEntry, processPeriodPeaks } from "./peak";
 import { processBiggestFractionChanges } from "./fraction-diff";
 import {
@@ -10,7 +14,17 @@ import {
     processBiggestGenderRatioChanges, processBiggestReligionRatioChanges
 } from "./ratio-diff";
 
-export function annotateWithNotableNames(periodsData: SinglePeriodStats[]): void {
+export function annotateWithNotableNames(
+    periodsStats: readonly DetailedSinglePeriodStats[],
+    recordsByName: ReadonlyMap<string, ReadonlyArray<NameRecord>>
+): void {
+    annotateGenerations(periodsStats);
+    annotateYears(periodsStats, recordsByName);
+}
+
+function annotateGenerations(
+    periodsData: readonly DetailedSinglePeriodStats[]
+) {
     const allGenStats = periodsData
         .filter(p => isGeneration(p.yearPeriod))
         .sort((a, b) => a.yearPeriod.end - b.yearPeriod.end);
@@ -19,9 +33,9 @@ export function annotateWithNotableNames(periodsData: SinglePeriodStats[]): void
         for (const gender of genders) {
             const peakPeriodByName = new Map<string, PeakEntry>();
 
-            let prevPeriodStats: SinglePeriodStats | null = null;
+            let prevPeriodStats: DetailedSinglePeriodStats | null = null;
             for (const curPeriodStats of allGenStats) {
-                annotatePeriodWithNotableNames(
+                annotatePeriod(
                     religion,
                     gender,
                     curPeriodStats,
@@ -37,12 +51,48 @@ export function annotateWithNotableNames(periodsData: SinglePeriodStats[]): void
     }
 }
 
-function annotatePeriodWithNotableNames(
+function annotateYears(
+    yearsStats: readonly DetailedSinglePeriodStats[],
+    recordsByName: ReadonlyMap<string, readonly NameRecord[]>
+) {
+    const allYearStats = yearsStats
+        .filter(p => isYear(p.yearPeriod))
+        .sort((a, b) => a.yearPeriod.end - b.yearPeriod.end);
+
+    const preFirstYearPeriod = previousYear(allYearStats[0].yearPeriod);
+
+    const preFirstYearStats = preFirstYearPeriod
+        ? buildPeriodStats(preFirstYearPeriod, recordsByName)
+        : null;
+
+    if (preFirstYearStats) {
+        allYearStats.unshift(preFirstYearStats);
+    }
+
+    for (const religion of religions) {
+        for (const gender of genders) {
+            let prevPeriodStats: DetailedSinglePeriodStats | null = null;
+
+            for (const curPeriodStats of allYearStats) {
+                annotatePeriod(
+                    religion,
+                    gender,
+                    curPeriodStats,
+                    prevPeriodStats
+                );
+
+                prevPeriodStats = curPeriodStats;
+            }
+        }
+    }
+}
+
+function annotatePeriod(
     religion: Religion,
     gender: Gender,
-    curPeriodStats: SinglePeriodStats,
-    prevPeriodStats: SinglePeriodStats | null,
-    peakPeriodByName: Map<string, PeakEntry>
+    curPeriodStats: DetailedSinglePeriodStats,
+    prevPeriodStats: DetailedSinglePeriodStats | null,
+    peakPeriodByName?: Map<string, PeakEntry>
 ): void {
     const demographic = religion.bitmask | gender.bitmask;
 
@@ -78,7 +128,7 @@ function annotatePeriodWithNotableNames(
 function collectCandidatePeriodNames(
     demographic: DemographicGroup,
     groupStats: DetailedDemographicGroupStats,
-    peakPeriodByName: Map<string, PeakEntry>,
+    peakPeriodByName?: Map<string, PeakEntry>,
 ): void {
     const minPeakFraction = 0.00_1;
     const minPeakTotal = Math.max(50, minPeakFraction * groupStats.populationTotal);
@@ -86,11 +136,14 @@ function collectCandidatePeriodNames(
     const fractionByName = new Map<string, number>();
 
     for (const entry of groupStats.entries!) {
-        const curPeak = peakPeriodByName.get(entry.name);
         const total = entry.ofDemographicGroup(demographic);
         const fraction = total / groupStats.populationTotal;
 
         fractionByName.set(entry.name, fraction);
+
+        if (!peakPeriodByName) continue;
+
+        const curPeak = peakPeriodByName?.get(entry.name);
 
         if (total >= minPeakTotal
             && (!curPeak || fraction > curPeak.fraction)) {

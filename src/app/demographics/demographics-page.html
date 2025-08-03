@@ -31,12 +31,13 @@
 </nav>
 
 @let gender = $gender();
+@let demographicLabel = $demographicTitle();
 
 <main [style.--color]="`var(--gender-background-${gender.slug})`">
 
     <h1>
         <!-- <span>שמות ישראל: </span><wbr> -->
-        <span>{{$demographicTitle() ? `${$demographicTitle()} – ` : ''}}</span><wbr>
+        <span>{{demographicLabel ? `${demographicLabel} – ` : ''}}</span><wbr>
         <span dir="rtl">{{$period().description}}</span><wbr>
         <span dir="rtl"> ({{$period() | yearPeriod }})</span>
     </h1>
@@ -55,12 +56,13 @@
             }} אנשים לשם</mat-chip>
     </mat-chip-set>
 
+    <!-- TODO: Name list component (with expand toggles & extra labels)-->
+
     @if (groupStats.peakNames) {
     <article class="peak-names">
         <h2>השמות של הדור</h2>
-        <p>השמות המובילים שהגיעו לשיאם ב{{$period().description}} כאחוז מקבוצת האוכלוסייה ביחס לשאר
-            הדורות.</p>
-        <app-chart mode="bar-list">
+        <p>השמות המובילים שהגיעו לשיאם ב{{$period().description}} כאחוז מקבוצת האוכלוסייה.</p>
+        <app-chart mode="bar">
             <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
             <app-chart-data-axis label="שם" [data]="groupStats.peakNames"
                 key="name"></app-chart-data-axis>
@@ -72,7 +74,7 @@
 
     <article class="top-names">
         <h2>השמות הכי פופולריים</h2>
-        <app-chart mode="bar-list">
+        <app-chart mode="bar">
             <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
             <app-chart-data-axis label="שם" [data]="groupStats.topNames"
                 key="name"></app-chart-data-axis>
@@ -80,6 +82,103 @@
                 key="total"></app-chart-dataset>
         </app-chart>
     </article>
+
+    @if (groupStats.risingNames) {
+    <article>
+        <h2>שמות בעלייה</h2>
+        <p>השמות עם העלייה הגדולה ביותר בשיעורם בקבוצת האוכלוסייה בנקודות האחוז.</p>
+        <app-chart mode="bar" valueFormat="number:1.3">
+            <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
+            <app-chart-data-axis label="שם" [data]="groupStats.risingNames"
+                key="name"></app-chart-data-axis>
+            <app-chart-dataset label="עלייה (נקודות אחוז)" [data]="groupStats.risingNames"
+                key="percentagePoints"></app-chart-dataset>
+        </app-chart>
+    </article>
+    }
+
+    @if (groupStats.fallingNames) {
+    <article>
+        <h2>שמות בירידה</h2>
+        <p>השמות עם הירידה הגדולה ביותר בשיעורם בקבוצת האוכלוסייה בנקודות האחוז.</p>
+        <app-chart mode="bar" valueFormat="number:1.3">
+            <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
+            <app-chart-data-axis label="שם" [data]="groupStats.fallingNames"
+                key="name"></app-chart-data-axis>
+            <app-chart-dataset label="ירידה (נקודות אחוז)" [data]="groupStats.fallingNames"
+                key="percentagePoints"></app-chart-dataset>
+        </app-chart>
+    </article>
+    }
+
+    @let religionPeopleLabel = $religion().slug === 'all' ? 'אוכלוסייה' : $religion().text;
+
+    @if (groupStats.risingWomenRatioNames) {
+    <article style="--color: var(--gender-background-women)">
+        <h2>עלייה בשיעור הבנות</h2>
+        <p>השמות עם העלייה הגדולה ביותר בשיעור הבנות מתוך כלל ה{{religionPeopleLabel}} עם השם
+            (בנקודות האחוז).</p>
+
+        @if (groupStats.risingWomenRatioNames.length === 0) {
+        <p>אין מספיק נתונים.</p>
+        } @else {
+        <app-chart mode="bar" valueFormat="number:1.0-1">
+            <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
+            <app-chart-data-axis label="שם" [data]="groupStats.risingWomenRatioNames"
+                key="name"></app-chart-data-axis>
+            <app-chart-dataset label="עלייה (נקודות אחוז)" [data]="groupStats.risingWomenRatioNames"
+                key="percentagePoints"></app-chart-dataset>
+        </app-chart>
+        }
+    </article>
+    }
+
+    @if (groupStats.risingMenRatioNames) {
+    <article style="--color: var(--gender-background-men)">
+        <h2>עלייה בשיעור הבנים</h2>
+        <p>השמות עם העלייה הגדולה ביותר בשיעור הבנים מתוך כלל ה{{religionPeopleLabel}} עם השם
+            (בנקודות האחוז).</p>
+
+        @if (groupStats.risingMenRatioNames.length === 0) {
+        <p>אין מספיק נתונים.</p>
+        } @else {
+        <app-chart mode="bar" valueFormat="number:1.0-1">
+            <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
+            <app-chart-data-axis label="שם" [data]="groupStats.risingMenRatioNames"
+                key="name"></app-chart-data-axis>
+            <app-chart-dataset label="עלייה (נקודות אחוז)" [data]="groupStats.risingMenRatioNames"
+                key="percentagePoints"></app-chart-dataset>
+        </app-chart>
+        }
+    </article>
+    }
+
+    <!-- @if (groupStats.risingReligionRatioNames) {
+    <article>
+        <h2>שמות בעלייה בשיעור הדת</h2>
+        <app-chart mode="bar" valueFormat="number:1.0-1">
+            <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
+            <app-chart-data-axis label="שם" [data]="groupStats.risingReligionRatioNames"
+                key="name"></app-chart-data-axis>
+            <app-chart-dataset label="עלייה (נקודות אחוז)"
+                [data]="groupStats.risingReligionRatioNames" key="percentagePoints"></app-chart-dataset>
+        </app-chart>
+    </article>
+    }
+
+    @if (groupStats.fallingReligionRatioNames) {
+    <article>
+        <h2>שמות בירידה בשיעור הדת</h2>
+        <app-chart mode="bar" valueFormat="number:1.0-1">
+            <app-chart-data-axis label="דירוג" data="index-with-dot"></app-chart-data-axis>
+            <app-chart-data-axis label="שם" [data]="groupStats.fallingReligionRatioNames"
+                key="name"></app-chart-data-axis>
+            <app-chart-dataset label="עלייה (נקודות אחוז)"
+                [data]="groupStats.fallingReligionRatioNames"
+                key="percentagePoints"></app-chart-dataset>
+        </app-chart>
+    </article>
+    } -->
 
     <article class="quantiles">
         <h2>התפלגות השמות</h2>

@@ -14,6 +14,7 @@ import { Chart, ChartDataAxis, ChartDataset } from "../core/chart/chart";
 import { PeriodStatsRepository } from './period-stats-repository';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-demographics-page',
@@ -24,6 +25,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatLabel, MatFormFieldModule, MatInputModule, MatSelectModule,
     YearPeriodPipe, DecimalPipe,
     Chart, ChartDataset, ChartDataAxis,
+    MatIconModule,
   ],
   templateUrl: './demographics-page.html',
   styleUrl: './demographics-page.scss',
@@ -125,7 +127,7 @@ export class DemographicsPage {
     });
 
     const topPercentiles = topPercentilesThresholds.map((threshold, i) => ({
-      index: `${91 + i}%`,
+      index: 91 + i,
       threshold,
       total: groupStats.quantileTotals[i + decileEnd],
     }));
@@ -140,7 +142,7 @@ export class DemographicsPage {
 
   protected $selectedQuantileDataFormat = signal<'absolute' | 'relative'>('absolute');
 
-  protected $selectedQuantileScale = signal<'linear' | 'log'>('log');
+  protected $selectedQuantileScale = signal<'linear' | 'log'>('linear');
 
   protected $quantileDataFormat = computed(() => {
     const total = this.$groupStats()?.populationTotal;

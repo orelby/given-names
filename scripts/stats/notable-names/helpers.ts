@@ -6,8 +6,8 @@ export interface NameDiffCandidateEntry {
 }
 
 export interface BiggestNameChanges {
-    rising: NameDiffEntry[];
-    falling: NameDiffEntry[];
+    rising: NameDiffEntry[] | undefined;
+    falling: NameDiffEntry[] | undefined;
 }
 
 export function biggestFractionChanges(
@@ -96,8 +96,8 @@ class MaxNameDiffHeap {
 
     topNameDiffs(options?: {
         minExtensionFraction?: number,
-    }): NameDiffEntry[] {
-        const sizes = [20, 15, 10];
+    }): NameDiffEntry[] | undefined {
+        const sizes = [20, 15, 10, 5, 3];
 
         const topEntries = this.fakeHeap
             .sort((a, b) => b.fractionDiff - a.fractionDiff)
@@ -118,7 +118,7 @@ class MaxNameDiffHeap {
             }
         }
 
-        return topEntries;
+        return undefined;
     }
 
     push(element: NameDiffCandidateEntry) {

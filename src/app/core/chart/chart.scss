@@ -117,6 +117,7 @@
 
         th,
         .chart-label {
+            min-width: max-content; // Otherwise might break line on Firefox
             align-self: start;
             padding-block: 0.25em;
         }

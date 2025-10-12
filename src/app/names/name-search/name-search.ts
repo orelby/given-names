@@ -34,6 +34,9 @@ const DEFAULT_SOUNDEX_MODE: SoundexSearchMode = 'exact';
         MatSelectModule, ScrollingModule,
         MatProgressSpinnerModule,
     ],
+    host: {
+        'class': 'page page-sm',
+    },
     templateUrl: './name-search.html',
     styleUrl: './name-search.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,

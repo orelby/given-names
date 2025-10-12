@@ -1,0 +1,22 @@
+@use "sass:map";
+
+// Coupled with `app/core/breakpoints/breakpoints.ts`
+$breakpoints: (
+    xs: 0,
+    sm: 576px,
+    md: 768px,
+    lg: 992px,
+    xl: 1200px,
+    xxl: 1400px
+);
+
+@mixin up($bp-name) {
+    $value: map.get($breakpoints, $bp-name);
+    @if $value != null {
+        @media (min-width: $value) {
+            @content;
+        }
+    } @else {
+        @warn "Breakpoint `#{$bp-name}` not found!";
+    }
+}

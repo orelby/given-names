@@ -1,9 +1,8 @@
 @use "@angular/material" as mat;
+@use "../../core/styles/breakpoints" as bp;
 
 :host {
     display: block;
-    max-width: 60ch;
-    margin: 0 auto;
 }
 
 .search-methods {

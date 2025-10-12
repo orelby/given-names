@@ -1,4 +1,5 @@
 @use "@angular/material" as mat;
+@use "./app/core/styles/breakpoints" as bp;
 
 /***** CSS Reset *****/
 
@@ -82,6 +83,24 @@ $theme: mat.define-theme(
     text-align: center;
 }
 
+/***** Breakpoints *****/
+
+@each $bp-name, $bp-value in bp.$breakpoints {
+    .page-#{$bp-name} {
+        --page-width: #{$bp-value};
+    }
+}
+
+.page {
+    max-width: var(--page-width);
+    margin: 0 auto;
+}
+
+.page-centered {
+    max-width: 100%;
+    padding-inline: max(0px, (100% - var(--page-width)) / 2);
+}
+
 /***** Global App Styles *****/
 
 :root {
@@ -126,7 +145,7 @@ $theme: mat.define-theme(
 
 body {
     min-height: 100%;
-    max-width: 100ch;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 0 2rem;
 }

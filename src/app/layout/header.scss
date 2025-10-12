@@ -1,15 +1,15 @@
 @use "@angular/material" as mat;
+@use "../core/styles/breakpoints" as bp;
 
 :host {
     --navbar-logo-text-font: var(--mat-sys-headline-small-font);
     --navbar-logo-text-size: var(--mat-sys-headline-small-size);
     --navbar-logo-block-size: var(--mat-sys-headline-small-line-height);
-    --navbar-height: calc(var(--navbar-logo-block-size) + 1.5rem);
+    --navbar-height: calc(var(--navbar-logo-block-size) + 2rem);
 
     display: grid;
     height: var(--navbar-height);
     margin: 0 auto 1rem;
-    padding-inline: max(0px, (100% - 80ch) / 2);
     background: var(--mat-sys-secondary-container);
     color: var(--mat-sys-secondary);
 }
@@ -29,7 +29,7 @@
     display: none;
 }
 
-@media (min-width: 992px) {
+@include bp.up(lg) {
     .show-mobile {
         display: none;
     }
@@ -111,7 +111,7 @@ $search-placeholder-inline-size: 15ch;
         display: block;
     }
 
-    @media (min-width: 992px) {
+    @include bp.up(lg) {
         .app-logo {
             display: flex;
         }

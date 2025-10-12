@@ -1,5 +1,6 @@
 import { InjectionToken } from '@angular/core';
 
+// Coupled with `app/core/styles/_breakpoints.scss`
 export const DEFAULT_BREAKPOINTS = {
     xs: 0,
     sm: 576,

@@ -15,7 +15,9 @@
 
     <nav class="show-desktop">
         <a mat-button routerLink="/names/search" tabindex="1">חיפוש שמות</a>
-        <a mat-button routerLink="/demographic" tabindex="1">קבוצות אוכלוסייה</a>
+        <a mat-button routerLink="/demographic" tabindex="1">כל הנתונים</a>
+        <a mat-button routerLink="/demographic" [queryParams]="{period: '1y'}"
+            tabindex="1">{{END_YEAR}}</a>
     </nav>
 
     <span class="spacer show-desktop"></span>
@@ -60,6 +62,7 @@
     aria-modal="true" aria-label="תפריט ראשי">
     <mat-nav-list (click)="closeDrawer()">
         <a mat-list-item routerLink="/names/search">חיפוש שמות</a>
-        <a mat-list-item routerLink="/demographic">קבוצות אוכלוסייה</a>
+        <a mat-list-item routerLink="/demographic">כל הנתונים</a>
+        <a mat-list-item routerLink="/demographic" [queryParams]="{period: '1y'}">{{END_YEAR}}</a>
     </mat-nav-list>
 </aside>

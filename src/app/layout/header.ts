@@ -14,6 +14,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NameSearchService } from '../names/name-search-service';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { END_YEAR } from '@shared/models/year-periods';
 
 @Component({
   selector: 'app-header',
@@ -108,6 +109,8 @@ export class Header {
       this.closeSearch();
     }
   });
+
+  protected readonly END_YEAR = END_YEAR;
 
   private readonly appRef = inject(ApplicationRef);
 

@@ -69,6 +69,11 @@ $theme: mat.define-theme(
         inline-size: 2em !important;
         margin: 1em auto;
     }
+
+    & {
+        --form-field-shape: var(--mat-sys-corner-medium);
+        --mat-form-field-outlined-container-shape: var(--form-field-shape);
+    }
 }
 
 /***** Utils *****/

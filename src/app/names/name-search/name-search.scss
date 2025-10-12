@@ -6,9 +6,15 @@
     margin: 0 auto;
 }
 
+.search-methods {
+    border-radius: var(--form-field-shape);
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    border-bottom: 0;
+}
+
 :host::ng-deep {
     .search-input {
-        // --mat-form-field-outlined-container-shape: var(--mat-sys-corner-large);
         margin-block-end: 1rem;
 
         @include mat.form-field-density(0);
@@ -17,35 +23,39 @@
         .mat-mdc-form-field-infix {
             width: 100%;
         }
-
-        // .mdc-notched-outline__leading {
-        //     border-start-start-radius: 0;
-        // }
     }
 
-    .select-input {
+    .search-option {
         @include mat.form-field-density(-5);
+        --mat-select-trigger-text-size: var(--mat-sys-body-medium-size);
 
         &,
         .mat-mdc-form-field-infix {
-            // min-width: 5ch;
+            min-width: max-content;
             width: auto;
         }
 
-        mat-select-trigger {
+        .mat-mdc-select-trigger {
             display: flex;
-            gap: 1ch;
-            // align-items: ;
-            margin-inline-end: 1ch;
+            gap: 0.75ch;
         }
     }
 }
 
-.search-method-tabs {
-    border-radius: var(--mat-sys-corner-large);
-    border-end-start-radius: 0;
-    border-end-end-radius: 0;
-    border-bottom: 0;
+.search-options {
+    display: flex;
+    overflow-x: auto;
+    align-items: center;
+    gap: 1ch;
+
+    & > * {
+        flex-shrink: 0;
+    }
+}
+
+.result-count {
+    min-width: max-content;
+    margin-inline-end: auto;
 }
 
 .results {
@@ -57,7 +67,7 @@
 
 .result {
     display: flex;
-    height: 70px;
+    height: 70px; // Fixed size for virtual scrolling container
     align-items: center;
 }
 
@@ -75,18 +85,18 @@
     border-width: 1px;
     border-color: var(--mat-sys-outline-variant);
     border-radius: var(--mat-sys-corner-medium);
-    box-shadow: var(--mat-sys-level0);
-    color: var(--mat-sys-on-surface);
     outline: none;
-    text-decoration: none;
+    box-shadow: var(--mat-sys-level0);
 
-    font-size: 16px;
+    font-size: 16px; // Fixed size for virtual scrolling container
     line-height: 1em;
+    color: var(--mat-sys-on-surface);
+    text-decoration: none;
 
     &:focus-within,
     &:hover {
-        color: var(--mat-sys-on-surface-variant);
         background: var(--mat-sys-surface-variant);
+        color: var(--mat-sys-on-surface-variant);
     }
 
     h2 {

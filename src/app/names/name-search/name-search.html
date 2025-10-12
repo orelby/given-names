@@ -3,12 +3,14 @@
         <h1 class="visually-hidden">חיפוש שמות</h1>
 
         <form class="search-form" (ngSubmit)="search(inputElement.value || '')">
-            <mat-button-toggle-group class="search-method-tabs" aria-label="סוג החיפוש"
-                hideSingleSelectionIndicator [value]="$searchMode()"
-                (change)="setSearchOption('mode', $event.value)">
-                <mat-button-toggle value="soundex">חיפוש שמות דומים</mat-button-toggle>
-                <mat-button-toggle value="phrase">חיפוש מדויק</mat-button-toggle>
-            </mat-button-toggle-group>
+            <div class="text-center">
+                <mat-button-toggle-group class="search-methods" aria-label="סוג החיפוש"
+                    hideSingleSelectionIndicator [value]="$searchMode()"
+                    (change)="setSearchOption('mode', $event.value)">
+                    <mat-button-toggle value="soundex">חיפוש שמות דומים</mat-button-toggle>
+                    <mat-button-toggle value="phrase">חיפוש מדויק</mat-button-toggle>
+                </mat-button-toggle-group>
+            </div>
 
             <mat-form-field class="search-input" subscriptSizing="dynamic" appearance="outline"
                 aria-label="שם לחיפוש">
@@ -17,26 +19,18 @@
                     [value]="$query()" (focus)="inputElement.select()">
             </mat-form-field>
 
-            <div style="display: flex; align-items: center; gap: 1ch;">
-                <span style="margin-inline-end: auto;">
-                    {{ $query() && $results.hasValue() 
-                       ? `${$results.value().length | number} תוצאות`
-                       : '' }}
+            <div class="search-options">
+                <span class="result-count">
+                    @if ($query() && $results.hasValue()) {
+                    {{ `${$results.value().length | number} תוצאות` }}
+                    }
                 </span>
 
                 <mat-icon role="presentation" fontIcon="filter_list"></mat-icon>
 
-                @if ($searchMode() === 'soundex') {
-                <mat-form-field subscriptSizing="dynamic" appearance="outline" class="select-input">
-                    <mat-select [value]="$soundexSearchMode()"
-                        (selectionChange)="setSearchOption('soundex-mode', $event.value)">
-                        <mat-option value="exact">התאמה מלאה</mat-option>
-                        <mat-option value="prefix">התאמת תחילית</mat-option>
-                    </mat-select>
-                </mat-form-field>
-                }
 
-                <mat-form-field subscriptSizing="dynamic" appearance="outline" class="select-input">
+                <mat-form-field subscriptSizing="dynamic" appearance="outline"
+                    class="search-option">
                     <mat-select [value]="$minPopulation()"
                         (selectionChange)="setSearchOption('min-population', $event.value)">
                         <mat-select-trigger>{{$minPopulation() | number}}+
@@ -50,6 +44,17 @@
                         }
                     </mat-select>
                 </mat-form-field>
+
+                @if ($searchMode() === 'soundex') {
+                <mat-form-field subscriptSizing="dynamic" appearance="outline"
+                    class="search-option">
+                    <mat-select [value]="$soundexSearchMode()"
+                        (selectionChange)="setSearchOption('soundex-mode', $event.value)">
+                        <mat-option value="exact">התאמה מלאה</mat-option>
+                        <mat-option value="prefix">התאמת תחילית</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                }
             </div>
         </form>
     </header>

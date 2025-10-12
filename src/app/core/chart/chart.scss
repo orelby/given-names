@@ -150,10 +150,11 @@
     }
 
     tbody {
-        th,
-        .chart-data {
-            writing-mode: horizontal-tb;
-        }
+        // TODO: Investigate tab crash on Firefox when toggling these lines (#16)
+        // th,
+        // .chart-data {
+        //     writing-mode: horizontal-tb;
+        // }
 
         td:not(.chart-data) {
             // Leave 2rem for data tooltip on highest column

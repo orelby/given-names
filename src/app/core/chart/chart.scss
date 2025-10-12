@@ -38,7 +38,7 @@
             grid-template-rows: repeat(var(--value-count, 0), 1fr);
             justify-items: start;
             align-items: center;
-            gap: 0.5ch;
+            column-gap: inherit;
         }
 
         th,
@@ -101,6 +101,7 @@
     tbody {
         tr {
             grid-template-columns: subgrid;
+            column-gap: inherit;
         }
 
         td:not(.chart-label) {

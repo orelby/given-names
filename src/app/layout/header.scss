@@ -51,6 +51,7 @@ $search-placeholder-inline-size: 15ch;
     align-items: center;
     color: inherit;
     background: inherit;
+    --mat-button-text-label-text-size: var(--mat-sys-body-large-size);
 }
 
 .app-logo {
@@ -74,6 +75,7 @@ $search-placeholder-inline-size: 15ch;
     // max-width: min-content;
     max-width: #{$search-placeholder-inline-size + 5ch};
     margin-inline-start: auto;
+    --mat-form-field-container-text-size: var(--mat-sys-body-medium-size);
 
     @include mat.form-field-density(-4);
 

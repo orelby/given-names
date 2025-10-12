@@ -24,7 +24,6 @@ import { END_YEAR } from '@shared/models/year-periods';
     MatButtonModule, MatIcon, MatNavList, MatListItem,
   ],
   host: {
-    'class': 'page page-md page-centered',
     '[class.has-drawer-open]': 'this.$isDrawerOpen()',
   },
   templateUrl: './header.html',

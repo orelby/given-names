@@ -86,19 +86,24 @@ $theme: mat.define-theme(
 /***** Breakpoints *****/
 
 @each $bp-name, $bp-value in bp.$breakpoints {
+    :root {
+        --page-width-#{$bp-name}: #{$bp-value};
+    }
+
     .page-#{$bp-name} {
-        --page-width: #{$bp-value};
+        --page-width: var(--page-width-#{$bp-name});
     }
 }
 
 .page {
     max-width: var(--page-width);
-    margin: 0 auto;
+    margin-inline: auto;
 }
 
 .page-centered {
     max-width: 100%;
     padding-inline: max(0px, (100% - var(--page-width)) / 2);
+    margin-inline: 0;
 }
 
 /***** Global App Styles *****/

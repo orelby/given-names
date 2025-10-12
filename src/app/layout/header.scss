@@ -45,13 +45,21 @@ $search-placeholder-inline-size: 15ch;
 
 .navbar {
     display: flex;
-    padding-inline: 1rem;
     gap: 0.5ch;
     justify-content: space-between;
     align-items: center;
     color: inherit;
     background: inherit;
+
     --mat-button-text-label-text-size: var(--mat-sys-body-large-size);
+
+    // Ensure full width without margin
+    // to prevent menu slide-in z-index issues (issue #5)
+    --page-width: calc(100% - 2rem);
+
+    @include bp.up(lg) {
+        --page-width: var(--page-width-md);
+    }
 }
 
 .app-logo {

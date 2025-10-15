@@ -66,7 +66,7 @@
             }
 
             &:hover::after {
-                background-color: hsl(from var(--_bg) h s calc(l * 0.95));
+                background-color: oklch(from var(--_bg) calc(l + 0.05) c h);
             }
         }
 
@@ -175,7 +175,7 @@
             border-radius: 5px;
 
             &:hover {
-                background-color: hsl(from var(--mat-sys-secondary-container) h s l / 70%);
+                background-color: oklch(from var(--mat-sys-secondary-container) l c h / 30%);
             }
 
             @media (prefers-reduced-motion: no-preference) {

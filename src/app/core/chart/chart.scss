@@ -231,7 +231,7 @@
         container-type: inline-size;
 
         display: grid;
-        grid-column: 2 / -1;
+        grid-column: calc(var(--label-count) + 1) / -1;
 
         border-block-end: 1px solid var(--border-color);
         padding-block-end: 1ch;

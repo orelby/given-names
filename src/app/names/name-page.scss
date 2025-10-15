@@ -87,15 +87,15 @@ section {
 .gender-bar {
     background: linear-gradient(
         to bottom,
-        var(--gender-color-men) 0%,
-        var(--gender-color-men) calc((1 - var(--ratio)) * 100%),
-        var(--gender-color-women) calc((1 - var(--ratio)) * 100%),
-        var(--gender-color-women) 100%
+        var(--gender-background-men) 0%,
+        var(--gender-background-men) calc((1 - var(--ratio)) * 100%),
+        var(--gender-background-women) calc((1 - var(--ratio)) * 100%),
+        var(--gender-background-women) 100%
     );
 }
 
 .gender-bar--empty {
-    background: var(--gender-color-all);
+    background: var(--gender-background-all);
 }
 
 .religion-bar {
@@ -109,50 +109,51 @@ section {
 }
 
 :host ::ng-deep {
-    th {
-        font: var(--mat-sys-body-large-font);
-    }
-
-    .religion-chart td {
-        --color: hsl(from var(--religion-color) h min(s, 40) 85%);
+    .religion-chart th {
+        font: var(--mat-sys-body-large);
     }
 }
 
-.religion-jewish,
-:host ::ng-deep .religion-chart tr:nth-child(1) {
-    --religion-color: var(--religion-color-jewish);
-}
-
-.religion-muslim,
-:host ::ng-deep .religion-chart tr:nth-child(2) {
-    --religion-color: var(--religion-color-muslim);
-}
-
-.religion-druze,
-:host ::ng-deep .religion-chart tr:nth-child(3) {
-    --religion-color: var(--religion-color-druze);
-}
-
-.religion-christian,
-:host ::ng-deep .religion-chart tr:nth-child(4) {
-    --religion-color: var(--religion-color-christian);
+.religion-segment {
+    background: var(--religion-background);
 }
 
 .religion-all {
     --religion-color: var(--religion-color-all);
 }
 
-.religion-segment {
-    background: var(--religion-color);
+$religions: (
+    jewish: 1,
+    muslim: 2,
+    druze: 3,
+    christian: 4
+);
+
+@each $religion, $index in $religions {
+    :host ::ng-deep .religion-chart tr:nth-child(#{$index}) {
+        --color: light-dark(var(--religion-background-#{$religion}), var(--religion-color-#{$religion}));
+    }
 }
 
 mat-card {
-    background: hsl(from var(--religion-color) h calc(s * 0.8) 93%);
-    transition: background-color 200ms;
+    & {
+        --mat-card-outlined-outline-color: oklch(from var(--religion-color) l calc(c / 2) h);
+        // background-color: var(--mat-sys-surface-container);
+    }
+
+    &:hover {
+        opacity: calc(1 - var(--mat-sys-hover-state-layer-opacity));
+    }
 }
 
-mat-card:hover {
-    background: hsl(from var(--religion-color) h calc(s * 0.8) 90%);
+mat-card-header {
+    padding-bottom: 1rem;
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+    justify-content: center;
+    color: #fff;
+    background-color: var(--religion-color);
+    transition: background-color 200ms;
 }
 
 .time-chart {
@@ -162,6 +163,7 @@ mat-card:hover {
         &:has(.chart.column) {
             max-inline-size: max-content;
         }
+
         margin: 0 auto;
     }
 
@@ -178,7 +180,10 @@ mat-card:hover {
     margin-block-end: 1em;
 }
 
-h3 {
+.religion-header {
+    display: flex;
+    gap: 1ch;
+    align-items: center;
     padding: 0;
     margin: 0;
     font: var(--mat-sys-body-large-font);

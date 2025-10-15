@@ -34,13 +34,13 @@ const TIME_CHART_GROUPS = {
     .map(r => ({
       bitmask: r.bitmask | GenderBitmasks.All,
       text: r.text,
-      color: `hsl(from var(--religion-color-${r.slug}) h min(s, 40) 85%)`,
+      color: `var(--religion-background-${r.slug})`,
     })),
 
   "all": [{
     bitmask: ReligionBitmasks.All | GenderBitmasks.All,
     text: 'אוכלוסייה',
-    color: undefined,
+      color: `var(--gender-background-all)`,
   }],
 } as const;
 

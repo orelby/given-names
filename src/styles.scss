@@ -108,9 +108,16 @@ $theme: mat.define-theme(
 
 /***** Global App Styles *****/
 
+$religion-hues: (
+    jewish: 263,
+    muslim: 142,
+    druze: 90,
+    christian: 20
+);
+
 :root {
     min-width: 20ch;
-    color-scheme: light;
+    color-scheme: light dark;
     height: 100%;
     padding: 0;
     margin: 0;
@@ -127,25 +134,35 @@ $theme: mat.define-theme(
     // scrollbar-gutter: stable;
     overflow-y: scroll;
 
-    --gender-color-all: #{mat.m2-get-color-from-palette(mat.$m2-gray-palette, 600)};
-    --gender-color-men: #{mat.m2-get-color-from-palette(mat.$m2-blue-palette, 400)};
-    --gender-color-women: #{mat.m2-get-color-from-palette(mat.$m2-pink-palette, 400)};
+    --gender-color-all: light-dark(oklch(0.7 0.13 295), oklch(0.45 0.13 295));
+    --gender-color-women: oklch(from var(--gender-color-all) l c 0);
+    --gender-color-men: oklch(from var(--gender-color-all) l c 230);
 
-    --gender-background-men: light-dark(hsl(200 70% 85%), hsl(200 50% 30%));
-    --gender-background-women: light-dark(hsl(330 70% 91%), hsl(330deg 40% 30%));
-    --gender-background-all: color-mix(in lab, var(--gender-background-women), var(--gender-background-men));
+    --gender-background-all: light-dark(oklch(0.8 0.08 295), oklch(0.35 0.05 295));
+    --gender-background-women: oklch(from var(--gender-background-all) l c 0);
+    --gender-background-men: oklch(from var(--gender-background-all) l c 230);
 
-    --religion-color-all: var(--gender-color-all);
+    --gender-color: var(--gender-color-all);
+    --gender-background: var(--gender-background-all);
 
-    // --religion-color-jewish: #184d8b;
-    // --religion-color-muslim: #29a333;
-    // --religion-color-christian: #be2328;
-    // --religion-color-druze: #ff9800;
+    --religion-color-all: light-dark(oklch(0.7 0.08 295), oklch(0.3 0.04 295));
+    --religion-background-all: light-dark(oklch(0.8 0.08 295), oklch(0.35 0.05 295));
 
-    --religion-color-jewish: hsl(212, 65%, 55%);
-    --religion-color-muslim: hsl(125, 90%, 35%);
-    --religion-color-christian: hsl(358, 60%, 60%);
-    --religion-color-druze: hsl(36, 100%, 50%);
+    --religion-color: var(--religion-color-all);
+    --religion-background: var(--religion-background-all);
+
+    @each $religion, $hue in $religion-hues {
+        --religion-hue-#{$religion}: #{$hue};
+        --religion-color-#{$religion}: oklch(from var(--religion-color-all) l c #{$hue});
+        --religion-background-#{$religion}: oklch(from var(--religion-background-all) l c #{$hue});
+    }
+}
+
+@each $religion, $hue in $religion_hues {
+    .religion-#{$religion} {
+        --religion-color: var(--religion-color-#{$religion});
+        --religion-background: var(--religion-background-#{$religion});
+    }
 }
 
 body {

@@ -39,6 +39,7 @@
             justify-items: start;
             align-items: center;
             column-gap: inherit;
+            row-gap: 0.5ch;
         }
 
         th,
@@ -99,11 +100,6 @@
 .chart.bar,
 .chart.column {
     tbody {
-        tr {
-            grid-template-columns: subgrid;
-            column-gap: inherit;
-        }
-
         td:not(.chart-label) {
             grid-column: -1;
         }
@@ -175,7 +171,7 @@
         }
 
         tr {
-            gap: 0;
+            // gap: 0;   // was this here for a good reason?
             border-radius: 5px;
 
             &:hover {

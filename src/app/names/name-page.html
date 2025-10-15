@@ -42,8 +42,15 @@
             @for (religion of religions; track religion) {
             <mat-card appearance="outlined" [class]="'religion-' + religion.slug" role="group">
                 <mat-card-header>
-                    <h3 class="religion-header">{{religion.icon}}
-                        {{religion.slug === 'all' ? 'כלל האוכלוסייה' : religion.text}}
+                    <h3 class="religion-header">
+                        @if (religion.slug === 'all') {
+                        כלל האוכלוסייה
+                        } @else {
+                        <img [src]="`/assets/icon-religion-${religion.slug}.svg`" height="16px"
+                            width="16px" alt="" aria-hidden="true">
+                        <span>{{religion.text}}</span>
+                        }
+
                     </h3>
                 </mat-card-header>
                 <mat-card-content>

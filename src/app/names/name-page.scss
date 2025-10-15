@@ -187,4 +187,11 @@ mat-card-header {
     padding: 0;
     margin: 0;
     font: var(--mat-sys-body-large-font);
+    line-height: 1;
+
+    img {
+        height: 1em;
+        width: auto;
+        stroke: currentColor;
+    }
 }

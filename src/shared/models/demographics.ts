@@ -57,31 +57,26 @@ export const religions = [
         bitmask: ReligionBitmasks.All,
         text: "כולם",
         slug: "all",
-        icon: "",
     },
     {
         bitmask: ReligionBitmasks.Jewish,
         text: "יהודים",
         slug: "jewish",
-        icon: "✡",
     },
     {
         bitmask: ReligionBitmasks.Muslim,
         text: "מוסלמים",
         slug: "muslim",
-        icon: "☪",
     },
     {
         bitmask: ReligionBitmasks.Druze,
         text: "דרוזים",
         slug: "druze",
-        icon: "⭐",
     },
     {
         bitmask: ReligionBitmasks.Christian,
         text: "נוצרים",
         slug: "christian",
-        icon: "✝",
     },
 ] as const;
 
